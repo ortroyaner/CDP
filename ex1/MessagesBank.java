@@ -13,13 +13,9 @@ public class MessagesBank {
         messages = new ArrayList<>();
     }
 
-    public synchronized void insertMessage() {
-
-    }
-
     /* This method tries to get a message from the messages array with the wanted generation.
     * If there is no message that fits (or if the array is empty), the thread waits. */
-    public synchronized Message getAndRemoveMessage(int generation) throws InterruptedException {
+    synchronized Message getAndRemoveMessage(int generation) throws InterruptedException {
         Message correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         while (correctGenerationMessage == null) {
             wait();
