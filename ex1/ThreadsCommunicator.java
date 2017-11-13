@@ -6,13 +6,13 @@ import static ex1.Message.Direction.*;
  * Created by Or Troyaner on 11/11/2017.
  */
 /* This class controls the messages passing and communication between parallel threads */
-public class ThreadsCommunicator {
+class ThreadsCommunicator {
     /* holds a bank of messages for thread's produce-consume */
     private MessagesBank[][] messagesBank;
     private int vSplit;
     private int hSplit;
 
-    public ThreadsCommunicator(int vSplit, int hSplit) {
+    ThreadsCommunicator(int vSplit, int hSplit) {
         this.vSplit = vSplit;
         this.hSplit = hSplit;
         messagesBank = new MessagesBank[this.vSplit][this.hSplit];
@@ -24,11 +24,11 @@ public class ThreadsCommunicator {
         }
     }
 
-    public Message getMessageFromBank(int row, int col, int generation) {
+    Message getMessageFromBank(int row, int col, int generation) {
         return messagesBank[row][col].getAndRemoveMessage(generation);
     }
 
-    public void insertToBank(int fromThreadRow, int fromThreadCol, Message messageToInsert) {
+    void insertToBank(int fromThreadRow, int fromThreadCol, Message messageToInsert) {
         Message.Direction direction = messageToInsert.getDirection();
         switch (direction) {
             case UP:
