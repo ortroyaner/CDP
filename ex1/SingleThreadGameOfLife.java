@@ -14,20 +14,20 @@ public class SingleThreadGameOfLife implements Runnable{
 
     public SingleThreadGameOfLife(boolean[][] initialTable,Index startIndex, Index endIndex,
                                   int threadRow, int threadCol, int originRows, int originCols, int generations,ThreadsCommunicator communicator){
-       this.prevTable = createMiniTable(convertToBoolean(initialTable),startIndex,endIndex);
-       this.currTable = createBlankTable();
-       this.generations = generations; this.currGen = 0;
        this.startIndex = startIndex; this.endIndex = endIndex;
        this.rows = endIndex.row-startIndex.row; this.cols=endIndex.col-startIndex.col;
+       this.generations = generations; this.currGen = 0;
        this.threadRow = threadRow; this.threadCol = threadCol;
        this.originRows = originRows; this.originCols = originCols;
        this.communicator = communicator;
+       this.prevTable = createMiniTable(convertToBoolean(initialTable),startIndex,endIndex);
+       this.currTable = createBlankTable();
     }
 
     private Boolean[][] convertToBoolean(boolean[][] initialTable) {
-        Boolean[][] tmp = new Boolean[initialTable.length][];
-        for (int i=0; i<initialTable.length; i++){
-            for(int j=0; j<initialTable[i].length;j++){
+        Boolean[][] tmp = new Boolean[originRows][originCols];
+        for (int i=0; i<originRows; i++){
+            for(int j=0; j<originCols;j++){
                 tmp[i][j] = initialTable[i][j];
             }
         }
@@ -230,7 +230,7 @@ public class SingleThreadGameOfLife implements Runnable{
                    //this is the frame we added. no need to copy from initial board game
                     continue;
                 }
-                cells[i][j] = initialTable[i+startIndex.row][j+startIndex.col];
+                cells[i][j] = initialTable[i+startIndex.row-1][j+startIndex.col-1];
 
             }
         }
