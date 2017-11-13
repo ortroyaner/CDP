@@ -25,6 +25,10 @@ public class Message {
         return direction;
     }
 
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
+
     public Integer getGeneration() {
         return generation;
     }
