@@ -47,6 +47,23 @@ class ThreadsCommunicator {
                 messageToInsert.setDirection(RIGHT);
                 messagesBank[fromThreadRow][fromThreadCol - 1].insertMessage(messageToInsert);
                 break;
+            // Corners:
+            case UPRIGHT:
+                messageToInsert.setDirection(DOWNLEFT); //change the message direction perspective
+                messagesBank[fromThreadRow - 1][fromThreadCol + 1].insertMessage(messageToInsert);
+                break;
+            case DOWNRIGHT:
+                messageToInsert.setDirection(UPLEFT);
+                messagesBank[fromThreadRow + 1][fromThreadCol + 1].insertMessage(messageToInsert);
+                break;
+            case DOWNLEFT:
+                messageToInsert.setDirection(UPRIGHT);
+                messagesBank[fromThreadRow + 1][fromThreadCol - 1].insertMessage(messageToInsert);
+                break;
+            case UPLEFT:
+                messageToInsert.setDirection(DOWNRIGHT);
+                messagesBank[fromThreadRow - 1][fromThreadCol - 1].insertMessage(messageToInsert);
+                break;
             default:
                 break;
         }
