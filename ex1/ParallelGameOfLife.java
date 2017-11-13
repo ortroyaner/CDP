@@ -21,7 +21,6 @@ public class ParallelGameOfLife implements GameOfLife {
         Thread[][] threads = new Thread[vSplit][hSplit];
 
         // give data to ThreadsCommunicator , hSplit + vSplit
-        //TODO: create communicator and send to singleThread
         ThreadsCommunicator communicator = new ThreadsCommunicator(vSplit, hSplit);
 
         for (int i = 0; i < numOfRows && countR < vSplit; i += rowJump) {
@@ -38,7 +37,12 @@ public class ParallelGameOfLife implements GameOfLife {
 
         startThreadsMatrixAndThenJoin(vSplit, hSplit, threads);
 
-        return null;
+		//return tables
+		boolean[][][] res = new boolean[2][][];
+		res[0] = Results.getPrev();
+		res[1] = Results.getLast();
+
+        return res;
     }
 
     private void startThreadsMatrixAndThenJoin(int numOfRows, int numOfCols, Thread[][] threads) {
@@ -57,5 +61,5 @@ public class ParallelGameOfLife implements GameOfLife {
             }
         }
     }
-    //TODO: fill out tables to return
+
 }

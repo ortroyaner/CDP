@@ -7,19 +7,31 @@ public class SingleThreadGameOfLife implements Runnable{
     Boolean[][] currTable, prevTable;
     int currGen, generations;
     Index startIndex, endIndex;
+    int rows, cols;
     int threadRow, threadCol;
     int originRows, originCols;
     ThreadsCommunicator communicator;
 
     public SingleThreadGameOfLife(boolean[][] initialTable,Index startIndex, Index endIndex,
                                   int threadRow, int threadCol, int originRows, int originCols, int generations,ThreadsCommunicator communicator){
-       this.prevTable = createMiniTable(initialTable,startIndex,endIndex);
+       this.prevTable = createMiniTable(convertToBoolean(initialTable),startIndex,endIndex);
        this.currTable = createBlankTable();
        this.generations = generations; this.currGen = 0;
        this.startIndex = startIndex; this.endIndex = endIndex;
+       this.rows = endIndex.row-startIndex.row; this.cols=endIndex.col-startIndex.col;
        this.threadRow = threadRow; this.threadCol = threadCol;
        this.originRows = originRows; this.originCols = originCols;
        this.communicator = communicator;
+    }
+
+    private Boolean[][] convertToBoolean(boolean[][] initialTable) {
+        Boolean[][] tmp = new Boolean[initialTable.length][];
+        for (int i=0; i<initialTable.length; i++){
+            for(int j=0; j<initialTable[i].length;j++){
+                tmp[i][j] = initialTable[i][j];
+            }
+        }
+        return tmp;
     }
 
     // this method will "play the game"
@@ -31,7 +43,6 @@ public class SingleThreadGameOfLife implements Runnable{
             updateCells();
 
             // check for cells from neighbors
-            // todo: for each message we get, update the prev table. after we took all the messages, update the curr table
             updateTableFromNeighbors();
 
             // update neighbors on cells in edges
@@ -40,33 +51,91 @@ public class SingleThreadGameOfLife implements Runnable{
             // switch tables (prev <= current , current should be blank)
             switchTables();
         }
+
+        // update original tables
+        Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
+        Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
+
+    }
+
+    private Boolean[][] returnToRealSize(Boolean[][] prevTable) {
+        Boolean[][] realSizePrev = new Boolean[rows][cols];
+        for (int i=0; i<rows; i++){
+            for(int j=0; j<cols; j++){
+                realSizePrev[i][j] = prevTable[i+1][j+1];
+            }
+        }
+        return realSizePrev;
     }
 
     // this method will update the current board form data from other neighbors
     private void updateTableFromNeighbors() {
-        // calc how many neighbors you have
-        // todo: can we have it from the communicator?
-        int numOfNeighbors=10000;
+        int currNeighborsStatus = 0, numOfNeighbors=communicator.calcNumOfNeighbourThreads(threadRow,threadCol);
+
         // ask for data from communicator about other neighbors
         // keep getting data, until you got all the data needed
-        int currStatus = 0;
-        while(currStatus < numOfNeighbors){
+        while(currNeighborsStatus < numOfNeighbors){
             Message message = communicator.getMessageFromBank(threadRow,threadCol,currGen-1);
             // update prev table with this data
+            switch (message.getDirection()){
+                case UP:
+                    // fill up the first row in the bigger table
+                    for(int i=0;i<cols+2;i++){
+                        prevTable[0][i] = message.getCells().get(i);
+                    }
+                    break;
+                case RIGHT:
+                    // fill up the right col in the bigger table
+                    for(int i=0;i<rows+2;i++){
+                        prevTable[rows+1][i] = message.getCells().get(i);
+                    }
+                    break;
+                case DOWN:
+                    // fill up the right col in the bigger table
+                    for(int i=0;i<cols+2;i++){
+                        prevTable[cols+1][i] = message.getCells().get(i);
+                    }
+                    break;
+                case LEFT:
+                    // fill up the right col in the bigger table
+                    for(int i=0;i<rows+2;i++){
+                        prevTable[i][0] = message.getCells().get(i);
+                    }
+                    break;
+                case UPLEFT:
+                    // fill up the up-left cell in the bigger table
+                    prevTable[0][0] = message.getCells().get(0);
+                    break;
+                case UPRIGHT:
+                    // fill up the up-right cell in the bigger table
+                    prevTable[0][cols-1] = message.getCells().get(0);
+                    break;
+                case DOWNRIGHT:
+                    // fill up the down-right cell in the bigger table
+                    prevTable[rows-1][cols-1] = message.getCells().get(0);
+                    break;
+                case DOWNLEFT:
+                    // fill up the down-left cell in the bigger table
+                    prevTable[rows-1][0] = message.getCells().get(0);
+                    break;
+            }
         }
 
         // update current board
+        updateCells();
+
     }
 
+    // send edges to communicator
     private void updateNeighbors() {
         if(startIndex.row != 0){
-            //send the first row in prev table
+            //send the first row in curr table
             ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[0]));
             Message message = new Message(row, Message.Direction.UP, currGen);
             communicator.insertToBank(threadRow,threadCol,message);
         }
         if(startIndex.col != 0){
-            //send the first col in prev table
+            //send the first col in curr table
             ArrayList<Boolean> col = new ArrayList<>();
             for(int row = 0; row < originRows; row++)
             {
@@ -76,7 +145,7 @@ public class SingleThreadGameOfLife implements Runnable{
             communicator.insertToBank(threadRow,threadCol,message);
         }
         if(endIndex.row != originRows){
-            //send the last row in prev table
+            //send the last row in curr table
             ArrayList<Boolean> col = new ArrayList<>();
             for(int row = 0; row < originRows; row++)
             {
@@ -86,7 +155,7 @@ public class SingleThreadGameOfLife implements Runnable{
             communicator.insertToBank(threadRow,threadCol,message);
         }
         if(endIndex.col != originCols){
-            //send the last col in prev table
+            //send the last col in curr table
             ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[originRows-1]));
             Message message = new Message(row, Message.Direction.DOWN, currGen);
             communicator.insertToBank(threadRow,threadCol,message);
@@ -95,8 +164,8 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // update the cells we already know
     private void updateCells(){
-        for(int i=this.startIndex.row;i<this.endIndex.col;i++){
-            for(int j=this.startIndex.col;j<this.endIndex.col;j++){
+        for(int i=0;i<rows;i++){
+            for(int j=0;j<cols;j++){
                 updateCell(i,j);
             }
         }
@@ -104,7 +173,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // update a single cell
     private void updateCell(int row, int col){
-        int liveNeighbors = 0;
+        int liveNeighbors = 0, deadNeighbors = 0, unknownNeighbors=0;
         int neiCol, neiRow;
 
         for(int i=-1; i<2; i++){
@@ -114,33 +183,34 @@ public class SingleThreadGameOfLife implements Runnable{
                     continue;
                 }
                 neiRow = row-i; neiCol = col-j;
-                liveNeighbors += calcCell(neiRow,neiCol);
-
-                //check if this cell will 'rebirth' or stay alive
-                if(liveNeighbors == 3 || (this.prevTable[row][col] && liveNeighbors==2) ){
-                    this.currTable[row][col] = true;
-                } else {
-                    this.currTable[row][col] = false;
+                if(prevTable[neiRow][neiCol]==false){
+                    deadNeighbors++;
                 }
+                if(prevTable[neiRow][neiCol]==true){
+                    liveNeighbors++;
+                }
+                unknownNeighbors=8-deadNeighbors-liveNeighbors;
+
+                //dead because of over crowded
+                if(liveNeighbors>3){
+                    currTable[row][col]=false;
+                    return;
+                }
+                //live with exactly 3 live neighbors
+                if(liveNeighbors==3 && unknownNeighbors==0){
+                    currTable[row][col]=true;
+                    return;
+                }
+                //live with exactly 2 live neighbors + live before
+                if(prevTable[row+1][col+1] && liveNeighbors==2 && unknownNeighbors==0){
+                    currTable[row][col]=true;
+                    return;
+                }
+
             }
         }
     }
 
-    // this will return 1 if the current neighbor is alive
-    private int calcCell(int neiRow, int neiCol){
-        // if the current cell is in the first row, it doesn't have a neighbor from above
-        if(!inBound(neiRow,neiCol)){
-            // do nothing, since all the non-exiting neighbors are considered dead.
-            // or - we dont know the status of this cell since it is not in our part of the table
-            return 0;
-        } else {
-            // the neighbor is in our part of the table so we can calc it
-            if (prevTable[neiRow][neiCol] == true) {
-                return 1;
-            }
-        }
-        return 0;
-    }
     // this method will check if we're in the big table and if we are in the current table
     private boolean inBound(int row, int col){
         if(row<0 || row<this.startIndex.row || row>=this.endIndex.row ||
@@ -150,39 +220,58 @@ public class SingleThreadGameOfLife implements Runnable{
         return true;
     }
 
-    // this will return the numbers of neighbors
-//    private int neighbors(int row, int col){
-//        int num=0;
-//        for(int i=-1; i<2; i++) {
-//            for (int j = -1; j < 2; j++) {
-//                if(i==0 && j==0) continue; // this is the current cell
-//                int neiRow = row+i, neiCol = col+j;
-//                boolean outsideSelfTable = neiRow<this.startIndex.row || neiRow>=this.endIndex.row ||
-//                        neiCol<this.startIndex.col || neiCol>=this.endIndex.col;
-//                // the cell is outside the curren table but inside the big board!
-//                if(outsideSelfTable && neiRow>=0 && neiRow<originRows
-//                        && neiCol>=0 && neiCol<originCols){
-//                    num++;
-//                }
-//            }
-//        }
-//        return num;
-//    }
-
     // fill the prev table with values
-    private Boolean[][] createMiniTable(boolean[][] initialTable, Index startIndex, Index endIndex) {
-        Boolean[][] cells = new Boolean[endIndex.row-startIndex.row][endIndex.col-startIndex.col];
-        for(int i=this.startIndex.row, i1=0 ;i<this.endIndex.col;i++, i1++){
-            for(int j=this.startIndex.col, j1=0 ;j<this.endIndex.col;j++, j1++){
-                cells[i1][j1] = initialTable[i][j];
+    private Boolean[][] createMiniTable(Boolean[][] initialTable, Index startIndex, Index endIndex) {
+        // create the prev table with the borders
+        Boolean[][] cells = new Boolean[rows+2][cols+2];
+        for(int i=0; i<rows+2;i++){
+            for(int j=0; j<cols+2; j++){
+                if(i==0 || i==rows+1 || j==0 || j==cols+1){
+                   //this is the frame we added. no need to copy from initial board game
+                    continue;
+                }
+                cells[i][j] = initialTable[i+startIndex.row][j+startIndex.col];
+
             }
         }
+
+        // fill out the upper + lower edges
+        for(int j=0; j<cols+2;j++){
+            if(startIndex.row==0){
+                //this is really the upper bound of the board
+                cells[0][j] = false;
+            }else{
+                cells[0][j] = null;
+            }
+            if(endIndex.row==originRows-1){
+                //this is really the lower bound of the board
+                cells[rows-1][j] = false;
+            }else{
+                cells[rows-1][j] = null;
+            }
+        }
+
+        // fill out the left + right edges
+        for(int i=0; i<rows+2;i++){
+            if(startIndex.col==0){
+                //this is really the left bound of the board
+                cells[i][0] = false;
+            }else{
+                cells[i][0] = null;
+            }
+            if(endIndex.col==originCols-1){
+                //this is really the right bound of the board
+                cells[i][cols-1] = false;
+            }else{
+                cells[i][cols-1] = null;
+            }
+        }
+
         return cells;
     }
 
     // empty the current table for a new round
     private Boolean[][] createBlankTable(){
-        int rows = endIndex.row-startIndex.row, cols = endIndex.col-startIndex.col;
         Boolean[][] cells = new Boolean[rows][cols];
         for(int i=0;i<rows;i++){
             for(int j=0;j<cols;j++){
@@ -194,11 +283,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // switch tables
     private void switchTables(){
-        for(int i=startIndex.row;i<endIndex.col;i++) {
-            for (int j = startIndex.col; j < endIndex.col; j++) {
-                this.prevTable[i][j] = this.currTable[i][j];
-            }
-        }
+        prevTable = createMiniTable(currTable, new Index(1,1), new Index(rows,cols));
         this.currTable = createBlankTable();
         this.currGen++;
     }
