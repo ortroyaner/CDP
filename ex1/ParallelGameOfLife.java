@@ -18,15 +18,18 @@ public class ParallelGameOfLife implements GameOfLife {
 
         Thread[][] threads = new Thread[vSplit][hSplit];
 
+        // give data to ThreadsCommunicator , hSplit + vSplit
+		//TODO: create communicator and send to singleThread
+		ThreadsCommunicator communicator = new ThreadsCommunicator(vSplit,hSplit);
+
         for(int i=0; i<numOfRows && countR < vSplit; i+=rowJump){
 			for(int j=0; j<numOfCols && countC < hSplit; j+=colJump){
 				// [i][j] is the mini section to solve by one thread
 				// create for every [i][j] a SingleThreadGoL
                 threads[i][j] = new Thread(new SingleThreadGameOfLife(initalField, new Index(i,j),
-                        new Index(i+rowJump,j+colJump),countR , countC ,generations));
+                        new Index(i+rowJump,j+colJump),countR , countC, numOfRows, numOfCols,generations, communicator));
 
-				// give data to ThreadsCommunicator , hSplit + vSplit
-                //TODO: create communicator
+
 				countC++;
 			}
 			countC=0;

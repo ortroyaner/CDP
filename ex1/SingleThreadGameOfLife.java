@@ -1,23 +1,25 @@
 package ex1;
 
-public class SingleThreadGameOfLife implements Runnable{
-    Boolean[][] currTable;
-    Boolean[][] prevTable;
-    int currGen;
-    int generations;
-    Index startIndex;
-    Index endIndex;
-    int threadRow, threadCol;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-    public SingleThreadGameOfLife(boolean[][] initialTable,Index startIndex, Index endIndex, int threadRow, int threadCol, int generations){
+public class SingleThreadGameOfLife implements Runnable{
+    Boolean[][] currTable, prevTable;
+    int currGen, generations;
+    Index startIndex, endIndex;
+    int threadRow, threadCol;
+    int originRows, originCols;
+    ThreadsCommunicator communicator;
+
+    public SingleThreadGameOfLife(boolean[][] initialTable,Index startIndex, Index endIndex,
+                                  int threadRow, int threadCol, int originRows, int originCols, int generations,ThreadsCommunicator communicator){
        this.prevTable = createMiniTable(initialTable,startIndex,endIndex);
        this.currTable = createBlankTable();
-       this.generations = generations;
-       this.currGen = 0;
-       this.startIndex = startIndex;
-       this.endIndex = endIndex;
-       this.threadRow = threadRow;
-       this.threadCol = threadCol;
+       this.generations = generations; this.currGen = 0;
+       this.startIndex = startIndex; this.endIndex = endIndex;
+       this.threadRow = threadRow; this.threadCol = threadCol;
+       this.originRows = originRows; this.originCols = originCols;
+       this.communicator = communicator;
     }
 
     // this method will "play the game"
@@ -40,7 +42,38 @@ public class SingleThreadGameOfLife implements Runnable{
     }
 
     private void updateNeighbors() {
-        //
+        if(startIndex.row != 0){
+            //send the first row in prev table
+            ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[0]));
+            Message message = new Message(row, Message.Direction.UP, currGen);
+            communicator.insertToBank(threadRow,threadCol,message);
+        }
+        if(startIndex.col != 0){
+            //send the first col in prev table
+            ArrayList<Boolean> col = new ArrayList<>();
+            for(int row = 0; row < originRows; row++)
+            {
+                col.add(currTable[row][0]);
+            }
+            Message message = new Message(col, Message.Direction.LEFT, currGen);
+            communicator.insertToBank(threadRow,threadCol,message);
+        }
+        if(endIndex.row != originRows){
+            //send the last row in prev table
+            ArrayList<Boolean> col = new ArrayList<>();
+            for(int row = 0; row < originRows; row++)
+            {
+                col.add(currTable[row][originCols-1]);
+            }
+            Message message = new Message(col, Message.Direction.RIGHT, currGen);
+            communicator.insertToBank(threadRow,threadCol,message);
+        }
+        if(endIndex.col != originCols){
+            //send the last col in prev table
+            ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[originRows-1]));
+            Message message = new Message(row, Message.Direction.DOWN, currGen);
+            communicator.insertToBank(threadRow,threadCol,message);
+        }
     }
 
     // update the cells we already know
@@ -65,6 +98,13 @@ public class SingleThreadGameOfLife implements Runnable{
                 }
                 neiRow = row-i; neiCol = col-j;
                 liveNeighbors += calcCell(neiRow,neiCol);
+
+                //check if this cell will 'rebirth' or stay alive
+                if(liveNeighbors == 3 || (this.prevTable[row][col] && liveNeighbors==2) ){
+                    this.currTable[row][col] = true;
+                } else {
+                    this.currTable[row][col] = false;
+                }
             }
         }
     }
