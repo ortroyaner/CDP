@@ -1,7 +1,5 @@
 package ex1;
 
-import ex1.Avner.ex1.Border;
-
 import static ex1.Message.Direction.*;
 
 /**
@@ -50,7 +48,8 @@ public class ThreadsCommunicator {
         }
     }
 
-    public Border getMessageFromBank(int threadRow, int threadCol, int generationNumber) {
+    public Message getMessageFromBank(int threadRow, int threadCol, int generationNumber) {
+
         return null;
     }
 }
