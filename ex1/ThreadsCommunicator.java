@@ -20,7 +20,7 @@ public class ThreadsCommunicator {
         }
     }
 
-    public Message getMessageFromBank(int row, int col, int generation) throws InterruptedException {
+    public Message getMessageFromBank(int row, int col, int generation)  {
         return messagesBank[row][col].getAndRemoveMessage(generation);
     }
 

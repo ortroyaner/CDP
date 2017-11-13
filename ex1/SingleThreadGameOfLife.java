@@ -32,13 +32,30 @@ public class SingleThreadGameOfLife implements Runnable{
 
             // check for cells from neighbors
             // todo: for each message we get, update the prev table. after we took all the messages, update the curr table
+            updateTableFromNeighbors();
 
-            // update neighbors on cells
+            // update neighbors on cells in edges
             updateNeighbors();
 
             // switch tables (prev <= current , current should be blank)
             switchTables();
         }
+    }
+
+    // this method will update the current board form data from other neighbors
+    private void updateTableFromNeighbors() {
+        // calc how many neighbors you have
+        // todo: can we have it from the communicator?
+        int numOfNeighbors=10000;
+        // ask for data from communicator about other neighbors
+        // keep getting data, until you got all the data needed
+        int currStatus = 0;
+        while(currStatus < numOfNeighbors){
+            Message message = communicator.getMessageFromBank(threadRow,threadCol,currGen-1);
+            // update prev table with this data
+        }
+
+        // update current board
     }
 
     private void updateNeighbors() {
@@ -132,6 +149,25 @@ public class SingleThreadGameOfLife implements Runnable{
         }
         return true;
     }
+
+    // this will return the numbers of neighbors
+//    private int neighbors(int row, int col){
+//        int num=0;
+//        for(int i=-1; i<2; i++) {
+//            for (int j = -1; j < 2; j++) {
+//                if(i==0 && j==0) continue; // this is the current cell
+//                int neiRow = row+i, neiCol = col+j;
+//                boolean outsideSelfTable = neiRow<this.startIndex.row || neiRow>=this.endIndex.row ||
+//                        neiCol<this.startIndex.col || neiCol>=this.endIndex.col;
+//                // the cell is outside the curren table but inside the big board!
+//                if(outsideSelfTable && neiRow>=0 && neiRow<originRows
+//                        && neiCol>=0 && neiCol<originCols){
+//                    num++;
+//                }
+//            }
+//        }
+//        return num;
+//    }
 
     // fill the prev table with values
     private Boolean[][] createMiniTable(boolean[][] initialTable, Index startIndex, Index endIndex) {

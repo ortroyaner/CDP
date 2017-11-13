@@ -15,10 +15,14 @@ public class MessagesBank {
 
     /* This method tries to get a message from the messages array with the wanted generation.
     * If there is no message that fits (or if the array is empty), the thread waits. */
-    synchronized Message getAndRemoveMessage(int generation) throws InterruptedException {
+    synchronized Message getAndRemoveMessage(int generation) {
         Message correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         while (correctGenerationMessage == null) {
-            wait();
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         }
         //At this point, we have a message with information that fits to the wanted generation
