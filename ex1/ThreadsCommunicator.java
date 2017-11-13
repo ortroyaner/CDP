@@ -20,7 +20,7 @@ public class ThreadsCommunicator {
         }
     }
 
-    public Message getFromBank(int row, int col, int generation) throws InterruptedException {
+    public Message getMessageFromBank(int row, int col, int generation) throws InterruptedException {
         return messagesBank[row][col].getAndRemoveMessage(generation);
     }
 
@@ -46,10 +46,5 @@ public class ThreadsCommunicator {
             default:
                 break;
         }
-    }
-
-    public Message getMessageFromBank(int threadRow, int threadCol, int generationNumber) {
-
-        return null;
     }
 }
