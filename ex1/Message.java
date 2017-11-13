@@ -12,7 +12,7 @@ public class Message {
     private Integer generation;
 
     public enum Direction {
-        UP, RIGHT, DOWN, LEFT
+        UP, RIGHT, DOWN, LEFT, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT
     }
 
     public Message(ArrayList<Boolean> cells, Direction direction, Integer generation) {
