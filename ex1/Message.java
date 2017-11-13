@@ -11,6 +11,10 @@ public class Message {
     private Direction direction;
     private Integer generation;
 
+    public enum Direction {
+        UP, RIGHT, DOWN, LEFT
+    }
+
     public Message(ArrayList<Boolean> cells, Direction direction, Integer generation) {
         this.cells = cells;
         this.direction = direction;
@@ -21,7 +25,11 @@ public class Message {
         return direction;
     }
 
-    public enum Direction {
-        UP, RIGHT, DOWN, LEFT
+    public Integer getGeneration() {
+        return generation;
+    }
+
+    public ArrayList<Boolean> getCells() {
+        return cells;
     }
 }
