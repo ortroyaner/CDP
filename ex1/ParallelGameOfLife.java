@@ -23,7 +23,7 @@ public class ParallelGameOfLife implements GameOfLife {
 				// [i][j] is the mini section to solve by one thread
 				// create for every [i][j] a SingleThreadGoL
                 threads[i][j] = new Thread(new SingleThreadGameOfLife(initalField, new Index(i,j),
-                        new Index(i+rowJump,j+colJump),generations));
+                        new Index(i+rowJump,j+colJump),countR , countC ,generations));
 
 				// give data to ThreadsCommunicator , hSplit + vSplit
                 //TODO: create communicator
