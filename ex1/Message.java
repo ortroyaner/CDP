@@ -7,10 +7,21 @@ import java.util.ArrayList;
  */
 /* This class describe a message that threads can produce and consume */
 public class Message {
-    public enum Direction {
-        UP, RIGHT, DOWN, LEFT, UPPER_RIGHT, LOWER_RIGHT, LOWER_LEFT, UPPER_LEFT
+    private ArrayList<Boolean> cells;
+    private Direction direction;
+    private Integer generation;
+
+    public Message(ArrayList<Boolean> cells, Direction direction, Integer generation) {
+        this.cells = cells;
+        this.direction = direction;
+        this.generation = generation;
     }
-    ArrayList<Boolean> cells;
-    Direction direction;
-    Integer generation;
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public enum Direction {
+        UP, RIGHT, DOWN, LEFT
+    }
 }
