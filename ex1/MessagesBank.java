@@ -17,6 +17,8 @@ public class MessagesBank {
 
     }
 
+    /* This method tries to get a message from the messages array with the wanted generation.
+    * If there is no message that fits (or if the array is empty), the thread waits. */
     public synchronized Message getAndRemoveMessage(int generation) throws InterruptedException {
         Message correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         while (correctGenerationMessage == null) {
@@ -32,7 +34,7 @@ public class MessagesBank {
         Iterator<Message> it = messages.iterator();
         while (it.hasNext()) {
             Message iteratedMessage = it.next();
-            if (iteratedMessage.generation == generation) {
+            if (iteratedMessage.getGeneration() == generation) {
                 it.remove();
                 return iteratedMessage;
             }
