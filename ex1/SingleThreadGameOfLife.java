@@ -182,7 +182,7 @@ public class SingleThreadGameOfLife implements Runnable{
                     // we are int the original cell that we're testing
                     continue;
                 }
-                neiRow = row-i; neiCol = col-j;
+                neiRow = (row==0) ? 0 : row-i; neiCol = (col==0) ? 0 : col-j;
                 if(prevTable[neiRow][neiCol]==false){
                     deadNeighbors++;
                 }
@@ -241,13 +241,14 @@ public class SingleThreadGameOfLife implements Runnable{
                 //this is really the upper bound of the board
                 cells[0][j] = false;
             }else{
-                cells[0][j] = null;
+                //thisis notthe upper row, take ata from initial table
+                cells[0][j] = initialTable[startIndex.row-1][j+startIndex.col-1];
             }
             if(endIndex.row==originRows-1){
                 //this is really the lower bound of the board
                 cells[rows-1][j] = false;
             }else{
-                cells[rows-1][j] = null;
+                cells[rows-1][j] = initialTable[endIndex.row][j+startIndex.col-1];
             }
         }
 
@@ -257,13 +258,13 @@ public class SingleThreadGameOfLife implements Runnable{
                 //this is really the left bound of the board
                 cells[i][0] = false;
             }else{
-                cells[i][0] = null;
+                cells[i][0] = initialTable[i+startIndex.row-1][startIndex.col-1];
             }
             if(endIndex.col==originCols-1){
                 //this is really the right bound of the board
                 cells[i][cols-1] = false;
             }else{
-                cells[i][cols-1] = null;
+                cells[i][cols-1] = initialTable[i+startIndex.row-1][endIndex.col];
             }
         }
 
