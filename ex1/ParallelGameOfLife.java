@@ -11,28 +11,21 @@ public class ParallelGameOfLife implements GameOfLife {
         boolean[][] lastTable;
 
         // create singleThreaded games
-        int numOfRows = initialField.length;
-        int numOfCols = initialField[0].length;
-        int rowJump = numOfRows / vSplit;
-        int colJump = numOfCols / hSplit;
-        int countC = 0;
-        int countR = 0;
+        int numOfRows = initialField.length, numOfCols = initialField[0].length;
+        int rowJump = numOfRows / vSplit, colJump = numOfCols / hSplit;
 
         Thread[][] threads = new Thread[vSplit][hSplit];
 
         // give data to ThreadsCommunicator , hSplit + vSplit
         ThreadsCommunicator communicator = new ThreadsCommunicator(vSplit, hSplit);
 
-        for (int i = 0; i < numOfRows && countR < vSplit; i += rowJump) {
-            for (int j = 0; j < numOfCols && countC < hSplit; j += colJump) {
+        for (int i = 0, countR=0; i < numOfRows && countR < vSplit; i += rowJump, countR++) {
+            for (int j = 0, countC=0; j < numOfCols && countC < hSplit; j += colJump, countC++) {
                 // [i][j] is the mini section to solve by one thread
                 // create for every [i][j] a SingleThreadGoL
                 threads[countR][countC] = new Thread(new SingleThreadGameOfLife(initialField, new Index(i, j),
-                        new Index(i + rowJump+1, j + colJump+1), countR, countC, numOfRows, numOfCols, generations, communicator));
-                countC++;
+                        new Index(i + rowJump, j + colJump), countR, countC, numOfRows, numOfCols, generations, communicator));
             }
-            countC = 0;
-            countR++;
         }
 
         startThreadsMatrixAndThenJoin(vSplit, hSplit, threads);
