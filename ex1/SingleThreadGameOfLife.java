@@ -241,14 +241,26 @@ public class SingleThreadGameOfLife implements Runnable{
                 //this is really the upper bound of the board
                 cells[0][j] = false;
             }else{
-                //thisis notthe upper row, take ata from initial table
+                //this is not the upper row, take ata from initial table
+                if(j==0 || j==cols+1){
+                    // this is the corner, it doesnt exist in the real table
+                    cells[0][0] = false;
+                    cells[0][cols+1] = false;
+                    continue;
+                }
                 cells[0][j] = initialTable[startIndex.row-1][j+startIndex.col-1];
             }
-            if(endIndex.row==originRows-1){
+            if(endIndex.row>=originRows-1){
                 //this is really the lower bound of the board
-                cells[rows-1][j] = false;
+                cells[rows+1][j] = false;
             }else{
-                cells[rows-1][j] = initialTable[endIndex.row][j+startIndex.col-1];
+                if(j==0 || j==cols+1){
+                    // this is the corner, it doesnt exist in the real table
+                    cells[rows+1][0] = false;
+                    cells[rows+1][cols+1] = false;
+                    continue;
+                }
+                cells[rows+1][j] = initialTable[endIndex.row][j+startIndex.col-1];
             }
         }
 
@@ -258,13 +270,25 @@ public class SingleThreadGameOfLife implements Runnable{
                 //this is really the left bound of the board
                 cells[i][0] = false;
             }else{
+                if(i==0 || i==rows+1){
+                    // this is the corner, it doesnt exist in the real table
+                    cells[0][0] = false;
+                    cells[0][cols+1] = false;
+                    continue;
+                }
                 cells[i][0] = initialTable[i+startIndex.row-1][startIndex.col-1];
             }
-            if(endIndex.col==originCols-1){
+            if(endIndex.col>=originCols-1){
                 //this is really the right bound of the board
-                cells[i][cols-1] = false;
+                cells[i][cols+1] = false;
             }else{
-                cells[i][cols-1] = initialTable[i+startIndex.row-1][endIndex.col];
+                if(i==0 || i==rows+1){
+                    // this is the corner, it doesnt exist in the real table
+                    cells[rows+1][0] = false;
+                    cells[rows+1][cols+1] = false;
+                    continue;
+                }
+                cells[i][cols+1] = initialTable[i+startIndex.row-1][endIndex.col];
             }
         }
 
