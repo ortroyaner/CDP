@@ -69,7 +69,19 @@ class ThreadsCommunicator {
         }
     }
 
-    public int calcNumOfNeighbourThreads(int threadRow, int threadCol) {
+    int calcNumOfNeighbourThreads(int threadRow, int threadCol) {
+        if (vSplit==0 || hSplit == 0) return 0;
+        if (vSplit==1 && hSplit ==1) return 0;
+        if (vSplit==1) //One row
+        {
+            if (threadCol==0 || threadCol ==hSplit-1) return 1;
+            else return 2;
+        }
+        if (hSplit==1) //One col
+        {
+            if (threadRow==0 || threadRow ==vSplit-1) return 1;
+            else return 2;
+        }
         if (isThreadIsCorner(threadRow, threadCol)) return 3;
         if (isThreadOnEdge(threadRow, threadCol)) return 5;
         return 8;
@@ -94,9 +106,9 @@ class ThreadsCommunicator {
 
     private boolean isThreadOnEdge(int threadRow, int threadCol) {
         return (isUpEdge(threadRow, threadCol)
-        || isRightEdge(threadRow, threadCol)
-        || isDownEdge(threadRow, threadCol)
-        || isLeftEdge(threadRow, threadCol));
+                || isRightEdge(threadRow, threadCol)
+                || isDownEdge(threadRow, threadCol)
+                || isLeftEdge(threadRow, threadCol));
     }
 
     private boolean isUpEdge(int threadRow, int threadCol) {
@@ -117,9 +129,9 @@ class ThreadsCommunicator {
 
     private boolean isThreadIsCorner(int threadRow, int threadCol) {
         return (isUpRightCorner(threadRow, threadCol)
-        || isDownRightCorner(threadRow, threadCol)
-        || isDownLeftCorner(threadRow, threadCol)
-        || isUpLeftCorner(threadRow, threadCol));
+                || isDownRightCorner(threadRow, threadCol)
+                || isDownLeftCorner(threadRow, threadCol)
+                || isUpLeftCorner(threadRow, threadCol));
     }
 
     private boolean isUpRightCorner(int threadRow, int threadCol) {
