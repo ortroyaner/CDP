@@ -75,6 +75,23 @@ class ThreadsCommunicator {
         return 8;
     }
 
+    SingleThreadGameOfLife.BlockMatrixDirection getThreadBlockMatrixLocation(int threadRow, int threadCol) {
+        //Corners
+        if (isUpRightCorner(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.UP_RIGHT_CORNER;
+        if (isDownRightCorner(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.DOWN_RIGHT_CORNER;
+        if (isDownLeftCorner(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.DOWN_LEFT_CORNER;
+        if (isUpLeftCorner(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.UP_LEFT_CORNER;
+
+        //Edges
+        if (isRightEdge(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.RIGHT_EDGE;
+        if (isDownEdge(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.DOWN_EDGE;
+        if (isLeftEdge(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.LEFT_EDGE;
+        if (isUpEdge(threadRow,threadCol)) return SingleThreadGameOfLife.BlockMatrixDirection.UP_EDGE;
+
+        //Inner
+        return SingleThreadGameOfLife.BlockMatrixDirection.INNER;
+    }
+
     private boolean isThreadOnEdge(int threadRow, int threadCol) {
         return (isUpEdge(threadRow, threadCol)
         || isRightEdge(threadRow, threadCol)
