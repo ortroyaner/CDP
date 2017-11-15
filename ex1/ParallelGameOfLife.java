@@ -23,8 +23,21 @@ public class ParallelGameOfLife implements GameOfLife {
             for (int j = 0, countC=0; j < numOfCols && countC < hSplit; j += colJump, countC++) {
                 // [i][j] is the mini section to solve by one thread
                 // create for every [i][j] a SingleThreadGoL
-                threads[countR][countC] = new Thread(new SingleThreadGameOfLife(initialField, new Index(i, j),
-                        new Index(i + rowJump, j + colJump), countR, countC, numOfRows, numOfCols, generations, communicator));
+                Index start = new Index(i, j);
+                int tmpi, tmpj;
+                if(countR==vSplit-1){
+                    tmpi = numOfRows;
+                } else{
+                    tmpi = i+rowJump;
+                }
+                if(countC==hSplit-1){
+                    tmpj=numOfCols;
+                } else{
+                    tmpj = j+colJump;
+                }
+                Index end = new Index(tmpi, tmpj);
+                threads[countR][countC] = new Thread(new SingleThreadGameOfLife(initialField, start,
+                        end, countR, countC, numOfRows, numOfCols, generations, communicator));
             }
         }
 
