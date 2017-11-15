@@ -40,19 +40,28 @@ public class SingleThreadGameOfLife implements Runnable{
         // as long as we have more generation to compute
         while(this.currGen < this.generations){
             // calc the cells we can do independently
+            System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateCells()"); //TODO: delete
             updateCells();
 
+            // update neighbors on cells in edges
+            System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateNeighbors()"); //TODO: delete
+            updateNeighbors();
+
             // check for cells from neighbors
+            System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateTableFromNeighbors()"); //TODO: delete
             updateTableFromNeighbors();
 
             // update neighbors on cells in edges
+            System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateNeighbors()"); //TODO: delete
             updateNeighbors();
 
             // switch tables (prev <= current , current should be blank)
+            System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling switchTables()"); //TODO: delete
             switchTables();
         }
 
         // update original tables
+        System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateTable()"); //TODO: delete
         Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
         Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
 
@@ -128,6 +137,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // send edges to communicator
     private void updateNeighbors() {
+        System.out.println("updateNeighbors"); // TODO: delete
         if(startIndex.row != 0){
             //send the first row in curr table
             ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[0]));

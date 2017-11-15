@@ -19,6 +19,7 @@ public class MessagesBank {
         Message correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         while (correctGenerationMessage == null) {
             try {
+                System.out.println("Threat wait()"); //TODO: delete
                 wait();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -26,6 +27,7 @@ public class MessagesBank {
             correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         }
         //At this point, we have a message with information that fits to the wanted generation
+        System.out.println("Threat woke up"); //TODO: delete
         return correctGenerationMessage;
     }
 
