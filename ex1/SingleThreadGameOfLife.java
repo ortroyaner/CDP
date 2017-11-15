@@ -17,6 +17,8 @@ public class SingleThreadGameOfLife implements Runnable {
     int threadRow, threadCol;
     int originRows, originCols;
     ThreadsCommunicator communicator;
+    int numNull=1;
+
 
     public SingleThreadGameOfLife(boolean[][] initialTable, Index startIndex, Index endIndex,
                                   int threadRow, int threadCol, int originRows, int originCols, int generations, ThreadsCommunicator communicator) {
@@ -212,34 +214,42 @@ public class SingleThreadGameOfLife implements Runnable {
                     // we are int the original cell that we're testing
                     continue;
                 }
-                neiRow = (row == 0) ? 0 : row - i;
-                neiCol = (col == 0) ? 0 : col - j;
+                neiRow = row + 1 + i;
+                neiCol = col + 1 + j;
                 if (prevTable[neiRow][neiCol] == false) {
                     deadNeighbors++;
                 }
                 if (prevTable[neiRow][neiCol] == true) {
                     liveNeighbors++;
                 }
-                unknownNeighbors = 8 - deadNeighbors - liveNeighbors;
-
-                //dead because of over crowded
-                if (liveNeighbors > 3) {
-                    currTable[row][col] = false;
-                    return;
-                }
-                //live with exactly 3 live neighbors
-                if (liveNeighbors == 3 && unknownNeighbors == 0) {
-                    currTable[row][col] = true;
-                    return;
-                }
-                //live with exactly 2 live neighbors + live before
-                if (prevTable[row + 1][col + 1] && liveNeighbors == 2 && unknownNeighbors == 0) {
-                    currTable[row][col] = true;
-                    return;
-                }
-
             }
         }
+
+        unknownNeighbors = 8 - deadNeighbors - liveNeighbors;
+
+        //dead because of over crowded
+        if (liveNeighbors > 3) {
+            currTable[row][col] = false;
+            return;
+        }
+        //live with exactly 3 live neighbors
+        if (liveNeighbors == 3 && unknownNeighbors == 0) {
+            currTable[row][col] = true;
+            return;
+        }
+        //live with exactly 2 live neighbors + live before
+        if (prevTable[row + 1][col + 1] && liveNeighbors == 2 && unknownNeighbors == 0) {
+            currTable[row][col] = true;
+            return;
+        }
+
+        //default
+        if(unknownNeighbors==0){
+            //all other cases are dead
+            currTable[row][col] = false;
+            return;
+        }
+
     }
 
     // this method will check if we're in the big table and if we are in the current table
@@ -257,212 +267,92 @@ public class SingleThreadGameOfLife implements Runnable {
         int numRowsOfInitTable = endIndex.row - startIndex.row, numColsOfInitTable = endIndex.col - startIndex.col;
         int numRowsOfExpandedTable = numRowsOfInitTable + 2, numColsOfExpandedTable = numColsOfInitTable + 2;
         Boolean[][] cells = new Boolean[numRowsOfExpandedTable][numColsOfExpandedTable];
-        for (int i = 0; i < numRowsOfExpandedTable; i++) {
-            for (int j = 0; j < numColsOfExpandedTable; j++) {
-                if (i == 0 || i == numRowsOfExpandedTable - 1 || j == 0 || j == numColsOfExpandedTable - 1) {
-                    //this is the frame we added. no need to copy from initial board game
-                    continue;
-                }
+
+        // fill the inner part
+        for (int i = 1; i < numRowsOfExpandedTable-1; i++) {
+            for (int j = 1; j < numColsOfExpandedTable-1; j++) {
                 cells[i][j] = initialTable[i + startIndex.row - 1][j + startIndex.col - 1];
             }
         }
 
-        //Fill edges
-        BlockMatrixDirection dir = communicator.getThreadBlockMatrixLocation(threadRow, threadCol);
+        // fill upper & lower border
+        for (int j=1; j<numColsOfExpandedTable-1; j++){
+            // this is the upper border of the table
+            if(startIndex.row == 0){
+                // this is the upper border of the original table. this upper row will be 0s
+                if (isInitial){
+                    cells[0][j] = false;
+                }else{
+                    cells[0][j] = null;
+                }
+            }else{
+                // this is not the upper border of the original table. copy neighbors
+                if (isInitial){
+                    cells[0][j] = initialTable[startIndex.row-1][j-1];
+                }else{
+                    cells[0][j] = null;
+                }
+            }
+
+            // this is the lower border of the table
+            if(endIndex.row == originRows){
+                // this is the lower border of the original table. this lower row will be 0s
+                if (isInitial){
+                    cells[numRowsOfExpandedTable-1][j] = false;
+                }else{
+                    cells[numRowsOfExpandedTable-1][j] = null;
+                }
+            }else{
+                // this is the lower border of the original table. copy neighbors
+                if (isInitial){
+//                    System.out.println("endIndex.row: "+endIndex.row+" j: "+j);
+                    cells[numRowsOfExpandedTable-1][j] = initialTable[endIndex.row][j-1];
+                }else{
+                    cells[numRowsOfExpandedTable-1][j] = null;
+                }
+            }
+        }
+
+        // fill left & right border
+        for(int i=1; i<numRowsOfExpandedTable-1; i++){
+            // this is the left border of the table
+            if(startIndex.col == 0){
+                // this is the left border of the original table. this left col will be 0s
+                if (isInitial){
+                    cells[i][0] = false;
+                }else{
+                    cells[i][0] = null;
+                }
+            }else{
+                // this is the left border of the original table. copy neighbors
+                if (isInitial){
+                    cells[i][0] = initialTable[i+startIndex.row-1][0];
+                }else{
+                    cells[i+startIndex.row-1][0] = null;
+                }
+            }
+
+            // this is the right border of the table
+            if(endIndex.col == originCols){
+                // this is the right border of the original table. this left col will be 0s
+                if (isInitial){
+                    cells[i][numColsOfExpandedTable-1] = false;
+                }else{
+                    cells[i][numColsOfExpandedTable-1] = null;
+                }
+            }else{
+                // this is the right border of the original table. copy neighbors
+                if (isInitial){
+                    cells[i][numColsOfExpandedTable-1] = initialTable[i+startIndex.row-1][originCols-1];
+                }else{
+                    cells[i][numColsOfExpandedTable-1] = null;
+                }
+            }
+        }
+
+        // fill out corners
         cells[0][0] = cells[0][numColsOfExpandedTable-1] =
                 cells[numRowsOfExpandedTable-1][numColsOfExpandedTable-1] = cells[numRowsOfExpandedTable-1][0]=false;
-        switch (dir) {
-            case INNER:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    if (isInitial) {
-                        // left & right cols
-                        cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                        cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                    } else {
-                        cells[i][0] = null;
-                        cells[i][numColsOfExpandedTable - 1] = null;
-                    }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    if (isInitial) {
-                        //upper & lower rows
-                        cells[0][j] = initialTable[startIndex.row - 1][j + startIndex.col - 1];
-                        cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                    } else {
-                        cells[0][j] = null;
-                        cells[numRowsOfExpandedTable - 1][j] = null;
-                    }
-                }
-                break;
-            case UP_RIGHT_CORNER:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][numColsOfExpandedTable - 1] = false; //no original border
-                        if (isInitial && i!=0) {
-                            cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                        } else {
-                            cells[i][0] = null;
-                        }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[0][j] = false;
-                        if (isInitial && j!=0) {
-                            cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                        } else {
-                            cells[numRowsOfExpandedTable - 1][j] = null;
-                        }
-                }
-                break;
-            case DOWN_RIGHT_CORNER:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][numColsOfExpandedTable - 1] = false; //no original border
-                        if (isInitial && i!=0) {
-                            cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                        } else {
-                            cells[i][0] = null;
-                        }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[numRowsOfExpandedTable-1][j] = false;
-                        if (isInitial && j!=0) {
-                            cells[0][j] = initialTable[startIndex.row-1][j + startIndex.col - 1];
-                        } else {
-                            cells[0][j] = null;
-                        }
-                }
-                break;
-            case DOWN_LEFT_CORNER:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][0] = false; //no original border
-                        if (isInitial && i!=0) {
-                            cells[i][numColsOfExpandedTable-1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                        } else {
-                            cells[i][numColsOfExpandedTable-1] = null;
-                        }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[numRowsOfExpandedTable-1][j] = false;
-                        if (isInitial && j!=0) {
-                            cells[0][j] = initialTable[startIndex.row - 1][j + startIndex.col - 1];
-                        } else {
-                            cells[0][j] = null;
-                        }
-                }
-                break;
-            case UP_LEFT_CORNER:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][0] = false; //no original border
-                        if (isInitial && i!=0) {
-                            cells[i][numColsOfExpandedTable-1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                        } else {
-                            cells[i][numColsOfExpandedTable-1] = null;
-                        }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[0][j] = false;
-                        if (isInitial && j!=0) {
-                            cells[numRowsOfExpandedTable-1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                        } else {
-                            cells[numRowsOfExpandedTable-1][j] = null;
-                        }
-                }
-                break;
-            case RIGHT_EDGE:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][numColsOfExpandedTable-1] = false; //no original border
-                    if (isInitial && i!=0) {
-                        cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                    } else {
-                        cells[i][0] = null;
-                    }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable-1; j++) {
-                    if (isInitial && j!=0) {
-                        cells[0][j] = initialTable[startIndex.row - 1][j + startIndex.col - 1];
-                        cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                    } else {
-                        cells[0][j] = null;
-                        cells[numRowsOfExpandedTable - 1][j] = null;
-                    }
-                }
-                break;
-            case DOWN_EDGE:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable-1; i++) {
-                    if (isInitial && i!=0) {
-                        cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                        cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                    } else {
-                        cells[i][0] = null;
-                        cells[i][numColsOfInitTable + 1] = null;
-                    }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[numRowsOfExpandedTable-1][j] = false;
-                    if (isInitial && j!=0) {
-                        cells[0][j] = initialTable[startIndex.row - 1][j + startIndex.col - 1];
-                    } else {
-                        cells[0][j] = null;
-                    }
-                }
-                break;
-            case LEFT_EDGE:
-                //fill by rows
-                for (int i = 0; i < numRowsOfExpandedTable; i++) {
-                    cells[i][0] = false; //no original border
-                    if (isInitial && i!=0) {
-                        cells[i][numColsOfExpandedTable-1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                    } else {
-                        cells[i][numColsOfExpandedTable-1] = null;
-                    }
-                }
-                //fill by cols
-                for (int j = 1; j < numColsOfExpandedTable; j++) {
-                    if (isInitial && j!=0) {
-                        cells[0][j] = initialTable[startIndex.row - 1][j + startIndex.col - 1];
-                        cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                    } else {
-                        cells[0][j] = null;
-                        cells[numRowsOfExpandedTable - 1][j] = null;
-                    }
-                }
-                break;
-            case UP_EDGE:
-                //fill by rows
-                for (int i = 1; i < numRowsOfExpandedTable; i++) {
-                    if (isInitial && i!=0) {
-                        cells[i][0] = initialTable[i + startIndex.row - 1][startIndex.col - 1];
-                        cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][endIndex.col];
-                    } else {
-                        cells[i][0] = null;
-                        cells[i][numColsOfInitTable + 1] = null;
-                    }
-                }
-                //fill by cols
-                for (int j = 0; j < numColsOfExpandedTable; j++) {
-                    cells[0][j] = false;
-                    if (isInitial && j!=0) {
-                        cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j + startIndex.col - 1];
-                    } else {
-                        cells[numRowsOfExpandedTable - 1][j] = null;
-                    }
-                }
-                break;
-            default:
-                break;
-        }
 
         return cells;
     }
@@ -483,5 +373,18 @@ public class SingleThreadGameOfLife implements Runnable {
         prevTable = createMiniTable(currTable, new Index(0, 0), new Index(rows, cols), false);
         this.currTable = createBlankTable();
         this.currGen++;
+        numNull=1;
+    }
+
+    //calc how many unknown
+    private int howManyNull(){
+        int nulls=0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if(currTable[i][j] == null)
+                    nulls++;
+            }
+        }
+        return nulls;
     }
 }
