@@ -20,7 +20,7 @@ public class SingleThreadGameOfLife implements Runnable{
        this.threadRow = threadRow; this.threadCol = threadCol;
        this.originRows = originRows; this.originCols = originCols;
        this.communicator = communicator;
-       this.prevTable = createMiniTable(convertToBoolean(initialTable),startIndex,endIndex);
+       this.prevTable = createMiniTable(convertToBoolean(initialTable),startIndex,endIndex, true);
        this.currTable = createBlankTable();
     }
 
@@ -183,6 +183,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // update the cells we already know
     private void updateCells(){
+        System.out.println("updateCells"); // TODO: delete
         for(int i=0;i<rows;i++){
             for(int j=0;j<cols;j++){
                 updateCell(i,j);
@@ -192,6 +193,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // update a single cell
     private void updateCell(int row, int col){
+        //System.out.println("Thread ["+threadRow+"]["+threadCol+"] is in updateCell"); // TODO: delete
         int liveNeighbors = 0, deadNeighbors = 0, unknownNeighbors=0;
         int neiCol, neiRow;
 
@@ -240,74 +242,93 @@ public class SingleThreadGameOfLife implements Runnable{
     }
 
     // fill the prev table with values
-    private Boolean[][] createMiniTable(Boolean[][] initialTable, Index startIndex, Index endIndex) {
+    private Boolean[][] createMiniTable(Boolean[][] initialTable, Index startIndex, Index endIndex, boolean isInitial) {
         // create the prev table with the borders
-        Boolean[][] cells = new Boolean[rows+2][cols+2];
-        for(int i=0; i<rows+2;i++){
-            for(int j=0; j<cols+2; j++){
-                if(i==0 || i==rows+1 || j==0 || j==cols+1){
+        int numRows = endIndex.row-startIndex.row, numCols = endIndex.col-startIndex.col;
+        Boolean[][] cells = new Boolean[numRows+2][numCols+2];
+        for(int i=0; i<numRows+2;i++){
+            for(int j=0; j<numCols+2; j++){
+                if(i==0 || i==numRows+1 || j==0 || j==numCols+1){
                    //this is the frame we added. no need to copy from initial board game
                     continue;
                 }
                 cells[i][j] = initialTable[i+startIndex.row-1][j+startIndex.col-1];
-
             }
         }
 
         // fill out the upper + lower edges
-        for(int j=0; j<cols+2;j++){
+        for(int j=0; j<numCols+2;j++){
             if(startIndex.row==0){
                 //this is really the upper bound of the board
                 cells[0][j] = false;
             }else{
-                //this is not the upper row, take ata from initial table
-                if(j==0 || j==cols+1){
+                //this is not the upper row, take data from initial table, or it is null since we don't know our
+                // neighbors results for the last round
+                if(j==0 || j==numCols+1){
                     // this is the corner, it doesnt exist in the real table
                     cells[0][0] = false;
-                    cells[0][cols+1] = false;
+                    cells[0][numCols+1] = false;
                     continue;
                 }
-                cells[0][j] = initialTable[startIndex.row-1][j+startIndex.col-1];
+                if(isInitial){
+                    cells[0][j] = initialTable[startIndex.row-1][j+startIndex.col-1];
+                } else {
+                    cells[0][j] = null; // this is a neighbor!
+                }
+
             }
             if(endIndex.row>=originRows-1){
                 //this is really the lower bound of the board
-                cells[rows+1][j] = false;
+                cells[numRows+1][j] = false;
             }else{
-                if(j==0 || j==cols+1){
+                if(j==0 || j==numCols+1){
                     // this is the corner, it doesnt exist in the real table
-                    cells[rows+1][0] = false;
-                    cells[rows+1][cols+1] = false;
+                    cells[numRows+1][0] = false;
+                    cells[numRows+1][numCols+1] = false;
                     continue;
                 }
-                cells[rows+1][j] = initialTable[endIndex.row][j+startIndex.col-1];
+                if(isInitial){
+                    cells[numRows+1][j] = initialTable[endIndex.row][j+startIndex.col-1];
+                }else {
+                    cells[numRows+1][j] = null; // this is a neighbor!
+                }
             }
         }
 
         // fill out the left + right edges
-        for(int i=0; i<rows+2;i++){
+        for(int i=0; i<numRows+2;i++){
             if(startIndex.col==0){
                 //this is really the left bound of the board
                 cells[i][0] = false;
             }else{
-                if(i==0 || i==rows+1){
+                if(i==0 || i==numRows+1){
                     // this is the corner, it doesnt exist in the real table
                     cells[0][0] = false;
                     cells[0][cols+1] = false;
                     continue;
                 }
-                cells[i][0] = initialTable[i+startIndex.row-1][startIndex.col-1];
+                if(isInitial){
+                    cells[i][0] = initialTable[i+startIndex.row-1][startIndex.col-1];
+                } else{
+                    cells[i][0] = null;
+                }
+
             }
             if(endIndex.col>=originCols-1){
                 //this is really the right bound of the board
-                cells[i][cols+1] = false;
+                cells[i][numCols+1] = false;
             }else{
-                if(i==0 || i==rows+1){
+                if(i==0 || i==numRows+1){
                     // this is the corner, it doesnt exist in the real table
-                    cells[rows+1][0] = false;
-                    cells[rows+1][cols+1] = false;
+                    cells[numRows+1][0] = false;
+                    cells[numRows+1][numCols+1] = false;
                     continue;
                 }
-                cells[i][cols+1] = initialTable[i+startIndex.row-1][endIndex.col];
+                if(isInitial){
+                    cells[i][numCols+1] = initialTable[i+startIndex.row-1][endIndex.col];
+                }else{
+                    cells[i][numCols+1] = null;
+                }
             }
         }
 
@@ -327,7 +348,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // switch tables
     private void switchTables(){
-        prevTable = createMiniTable(currTable, new Index(0,0), new Index(rows,cols));
+        prevTable = createMiniTable(currTable, new Index(0,0), new Index(rows,cols), false);
         this.currTable = createBlankTable();
         this.currGen++;
     }
