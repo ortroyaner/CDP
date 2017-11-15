@@ -87,11 +87,11 @@ class ThreadsCommunicator {
     }
 
     private boolean isRightEdge(int threadRow, int threadCol) {
-        return (!isThreadIsCorner(threadRow, threadCol) && threadCol == this.vSplit - 1);
+        return (!isThreadIsCorner(threadRow, threadCol) && threadCol == this.hSplit - 1);
     }
 
     private boolean isDownEdge(int threadRow, int threadCol) {
-        return (!isThreadIsCorner(threadRow, threadCol) && threadRow == this.hSplit - 1);
+        return (!isThreadIsCorner(threadRow, threadCol) && threadRow == this.vSplit - 1);
     }
 
     private boolean isLeftEdge(int threadRow, int threadCol) {
@@ -106,15 +106,15 @@ class ThreadsCommunicator {
     }
 
     private boolean isUpRightCorner(int threadRow, int threadCol) {
-        return (threadRow == 0 && threadCol == this.vSplit - 1);
+        return (threadRow == 0 && threadCol == this.hSplit - 1);
     }
 
     private boolean isDownRightCorner(int threadRow, int threadCol) {
-        return (threadRow == this.hSplit - 1 && threadCol == this.vSplit - 1);
+        return (threadRow == this.vSplit - 1 && threadCol == this.hSplit - 1);
     }
 
     private boolean isDownLeftCorner(int threadRow, int threadCol) {
-        return (threadRow == this.hSplit - 1 && threadCol == 0);
+        return (threadRow == this.vSplit - 1 && threadCol == 0);
     }
 
     private boolean isUpLeftCorner(int threadRow, int threadCol) {
