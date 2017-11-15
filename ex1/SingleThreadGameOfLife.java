@@ -47,6 +47,15 @@ public class SingleThreadGameOfLife implements Runnable{
             System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateNeighbors()"); //TODO: delete
             updateNeighbors();
 
+            // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
+            // ask for information from other threads.
+            if(currGen==0){
+                // switch tables (prev <= current , current should be blank)
+                System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling switchTables()"); //TODO: delete
+                switchTables();
+
+                continue;
+            }
             // check for cells from neighbors
             System.out.println("Thread [" + threadRow + "][" + threadCol +"] is calling updateTableFromNeighbors()"); //TODO: delete
             updateTableFromNeighbors();
@@ -318,7 +327,7 @@ public class SingleThreadGameOfLife implements Runnable{
 
     // switch tables
     private void switchTables(){
-        prevTable = createMiniTable(currTable, new Index(1,1), new Index(rows,cols));
+        prevTable = createMiniTable(currTable, new Index(0,0), new Index(rows,cols));
         this.currTable = createBlankTable();
         this.currGen++;
     }
