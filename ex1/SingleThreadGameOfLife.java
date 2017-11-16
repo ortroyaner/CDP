@@ -254,11 +254,8 @@ public class SingleThreadGameOfLife implements Runnable {
 
     // this method will check if we're in the big table and if we are in the current table
     private boolean inBound(int row, int col) {
-        if (row < 0 || row < this.startIndex.row || row >= this.endIndex.row ||
-                col < 0 || col < this.startIndex.col || col >= this.endIndex.col) {
-            return false;
-        }
-        return true;
+        return !(row < 0 || row < this.startIndex.row || row >= this.endIndex.row ||
+                col < 0 || col < this.startIndex.col || col >= this.endIndex.col);
     }
 
     // fill the prev table with values
