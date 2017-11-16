@@ -17,7 +17,7 @@ public class SingleThreadGameOfLife implements Runnable {
     int threadRow, threadCol;
     int originRows, originCols;
     ThreadsCommunicator communicator;
-    int numNull=1;
+    int numNull = 1;
 
 
     public SingleThreadGameOfLife(boolean[][] initialTable, Index startIndex, Index endIndex,
@@ -52,40 +52,53 @@ public class SingleThreadGameOfLife implements Runnable {
     public void run() {
         // as long as we have more generation to compute
         while (this.currGen < this.generations) {
-            // calc the cells we can do independently
-            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateCells()"); //TODO: delete
-            updateCells();
+            if (this.currGen == 0) {
+                // calc the cells we can do independently
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
+                updateCells();
 
-            // update neighbors on cells in edges
-            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateNeighbors()"); //TODO: delete
-            updateNeighbors();
+                // update neighbors on cells in edges
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()"); //TODO: delete
+                updateNeighbors();
 
-            // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
-            // ask for information from other threads.
-            if (currGen == 0) {
-                // switch tables (prev <= current , current should be blank)
-                System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling switchTables()"); //TODO: delete
-                switchTables();
+                // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
+                // ask for information from other threads.
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
+                if (this.currGen != this.generations - 1) {
+                    switchTables();
+                } else this.currGen++;
+            } else {
+                // calc the cells we can do independently
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
+                updateCells();
 
-                continue;
+                // check for cells from neighbors
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateTableFromNeighbors()"); //TODO: delete
+                updateTableFromNeighbors();
+
+                // update neighbors on cells in edges
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()"); //TODO: delete
+                updateNeighbors();
+
+                // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
+                // ask for information from other threads.
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
+                if (this.currGen != this.generations - 1) {
+                    switchTables();
+                } else this.currGen++;
             }
-            // check for cells from neighbors
-            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTableFromNeighbors()"); //TODO: delete
-            updateTableFromNeighbors();
-
-            // update neighbors on cells in edges
-            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateNeighbors()"); //TODO: delete
-            updateNeighbors();
-
-            // switch tables (prev <= current , current should be blank)
-            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling switchTables()"); //TODO: delete
-            switchTables();
         }
 
         // update original tables
+        System.out.println("PrevBefore: \n" + printBoolMatrix(currTable)); //TODO: delete
+        System.out.println("FinalBefore: \n" + printBoolMatrix(returnToRealSize(prevTable))); //TODO: delete
+
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()"); //TODO: delete
         Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
         Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
+
+        System.out.println("Prev: \n" + printboolMatrix(Results.getPrev())); //TODO: delete
+        System.out.println("Final: \n" + printboolMatrix(Results.getLast())); //TODO: delete
 
     }
 
@@ -106,31 +119,32 @@ public class SingleThreadGameOfLife implements Runnable {
         // ask for data from communicator about other neighbors
         // keep getting data, until you got all the data needed
         while (currNeighborsStatus < numOfNeighbors) {
+            currNeighborsStatus++;
             Message message = communicator.getMessageFromBank(threadRow, threadCol, currGen - 1);
             // update prev table with this data
             switch (message.getDirection()) {
                 case UP:
                     // fill up the first row in the bigger table
                     for (int i = 0; i < cols; i++) {
-                        prevTable[0][i+1] = message.getCells().get(i);
+                        prevTable[0][i + 1] = message.getCells().get(i);
                     }
                     break;
                 case DOWN:
                     // fill up the right col in the bigger table
                     for (int i = 0; i < cols; i++) {
-                        prevTable[rows + 1][i+1] = message.getCells().get(i);
+                        prevTable[rows + 1][i + 1] = message.getCells().get(i);
                     }
                     break;
                 case RIGHT:
                     // fill up the right col in the bigger table
                     for (int i = 0; i < rows; i++) {
-                        prevTable[i+1][cols + 1] = message.getCells().get(i);
+                        prevTable[i + 1][cols + 1] = message.getCells().get(i);
                     }
                     break;
                 case LEFT:
                     // fill up the left col in the bigger table
                     for (int i = 0; i < rows; i++) {
-                        prevTable[i+1][0] = message.getCells().get(i);
+                        prevTable[i + 1][0] = message.getCells().get(i);
                     }
                     break;
                 case UPLEFT:
@@ -153,6 +167,7 @@ public class SingleThreadGameOfLife implements Runnable {
         }
 
         // update current board
+        System.out.println("updaing cells from inner"); // TODO: delete
         updateCells();
 
     }
@@ -177,7 +192,7 @@ public class SingleThreadGameOfLife implements Runnable {
         }
         if (endIndex.row != originRows) {
             //send the last row in curr table
-            ArrayList<Boolean> lastRow = new ArrayList<>(Arrays.asList(currTable[rows-1]));
+            ArrayList<Boolean> lastRow = new ArrayList<>(Arrays.asList(currTable[rows - 1]));
             Message message = new Message(lastRow, Message.Direction.DOWN, currGen);
             communicator.insertToBank(threadRow, threadCol, message);
         }
@@ -216,10 +231,10 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 neiRow = row + 1 + i;
                 neiCol = col + 1 + j;
-                if (prevTable[neiRow][neiCol]!=null && prevTable[neiRow][neiCol] == false) {
+                if (prevTable[neiRow][neiCol] != null && prevTable[neiRow][neiCol] == false) {
                     deadNeighbors++;
                 }
-                if (prevTable[neiRow][neiCol]!=null && prevTable[neiRow][neiCol] == true) {
+                if (prevTable[neiRow][neiCol] != null && prevTable[neiRow][neiCol] == true) {
                     liveNeighbors++;
                 }
             }
@@ -244,7 +259,7 @@ public class SingleThreadGameOfLife implements Runnable {
         }
 
         //default
-        if(unknownNeighbors==0){
+        if (unknownNeighbors == 0) {
             //all other cases are dead
             currTable[row][col] = false;
             return;
@@ -266,91 +281,136 @@ public class SingleThreadGameOfLife implements Runnable {
         Boolean[][] cells = new Boolean[numRowsOfExpandedTable][numColsOfExpandedTable];
 
         // fill the inner part
-        for (int i = 1; i < numRowsOfExpandedTable-1; i++) {
-            for (int j = 1; j < numColsOfExpandedTable-1; j++) {
+        for (int i = 1; i < numRowsOfExpandedTable - 1; i++) {
+            for (int j = 1; j < numColsOfExpandedTable - 1; j++) {
                 cells[i][j] = initialTable[i + startIndex.row - 1][j + startIndex.col - 1];
             }
         }
 
         // fill upper & lower border
-        for (int j=1; j<numColsOfExpandedTable-1; j++){
+        for (int j = 1; j < numColsOfExpandedTable - 1; j++) {
             // this is the upper border of the table
-            if(startIndex.row == 0){
+            if (this.startIndex.row == 0) {
                 // this is the upper border of the original table. this upper row will be 0s
-                if (isInitial){
-                    cells[0][j] = false;
-                }else{
-                    cells[0][j] = null;
-                }
-            }else{
+                cells[0][j] = false;
+            } else {
                 // this is not the upper border of the original table. copy neighbors
-                if (isInitial){
-                    cells[0][j] = initialTable[startIndex.row-1][j-1];
-                }else{
+                if (isInitial) {
+                    cells[0][j] = initialTable[startIndex.row - 1][j - 1];
+                } else {
                     cells[0][j] = null;
                 }
             }
 
             // this is the lower border of the table
-            if(endIndex.row == originRows){
+            if (this.endIndex.row == originRows) {
                 // this is the lower border of the original table. this lower row will be 0s
-                if (isInitial){
-                    cells[numRowsOfExpandedTable-1][j] = false;
-                }else{
-                    cells[numRowsOfExpandedTable-1][j] = null;
-                }
-            }else{
+                cells[numRowsOfExpandedTable - 1][j] = false;
+            } else {
                 // this is the lower border of the original table. copy neighbors
-                if (isInitial){
+                if (isInitial) {
 //                    System.out.println("endIndex.row: "+endIndex.row+" j: "+j);
-                    cells[numRowsOfExpandedTable-1][j] = initialTable[endIndex.row][j-1];
-                }else{
-                    cells[numRowsOfExpandedTable-1][j] = null;
+                    cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j - 1];
+                } else {
+                    cells[numRowsOfExpandedTable - 1][j] = null;
                 }
             }
         }
 
         // fill left & right border
-        for(int i=1; i<numRowsOfExpandedTable-1; i++){
+        for (int i = 1; i < numRowsOfExpandedTable - 1; i++) {
             // this is the left border of the table
-            if(startIndex.col == 0){
+            if (this.startIndex.col == 0) {
                 // this is the left border of the original table. this left col will be 0s
-                if (isInitial){
-                    cells[i][0] = false;
-                }else{
-                    cells[i][0] = null;
-                }
-            }else{
+                cells[i][0] = false;
+            } else {
                 // this is the left border of the original table. copy neighbors
-                if (isInitial){
-                    cells[i][0] = initialTable[i+startIndex.row-1][0];
-                }else{
-                    cells[i+startIndex.row-1][0] = null;
+                if (isInitial) {
+                    cells[i][0] = initialTable[i + startIndex.row - 1][0];
+                } else {
+                    cells[i + startIndex.row - 1][0] = null;
                 }
             }
 
             // this is the right border of the table
-            if(endIndex.col == originCols){
+            if (this.endIndex.col == originCols) {
                 // this is the right border of the original table. this left col will be 0s
-                if (isInitial){
-                    cells[i][numColsOfExpandedTable-1] = false;
-                }else{
-                    cells[i][numColsOfExpandedTable-1] = null;
-                }
-            }else{
+                cells[i][numColsOfExpandedTable - 1] = false;
+            } else {
                 // this is the right border of the original table. copy neighbors
-                if (isInitial){
-                    cells[i][numColsOfExpandedTable-1] = initialTable[i+startIndex.row-1][originCols-1];
-                }else{
-                    cells[i][numColsOfExpandedTable-1] = null;
+                if (isInitial) {
+                    cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][originCols - 1];
+                } else {
+                    cells[i][numColsOfExpandedTable - 1] = null;
                 }
             }
         }
 
-        // fill out corners
-        cells[0][0] = cells[0][numColsOfExpandedTable-1] =
-                cells[numRowsOfExpandedTable-1][numColsOfExpandedTable-1] = cells[numRowsOfExpandedTable-1][0]=false;
 
+        //Fill corners
+        BlockMatrixDirection dir = communicator.getThreadBlockMatrixLocation(threadRow, threadCol);
+        switch (dir) {
+            case UP_RIGHT_CORNER:
+                cells[0][0] = false;
+                cells[0][numColsOfExpandedTable - 1] = false;
+                cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                if (startIndex.col - 1 < 0 || numRowsOfExpandedTable - 1 + startIndex.row - 1 > numRowsOfInitTable - 1) {
+                    cells[numRowsOfExpandedTable - 1][0] = false;
+                } else {
+                    if (isInitial) {
+                        cells[numRowsOfExpandedTable - 1][0]
+                                = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
+                    } else {
+                        cells[numRowsOfExpandedTable - 1][0] = null;
+                    }
+                }
+                break;
+            case DOWN_RIGHT_CORNER:
+                cells[0][numColsOfExpandedTable - 1] = false; //no original border
+                cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                cells[numRowsOfExpandedTable - 1][0] = false;
+                if (startIndex.row - 1 < 0 || startIndex.col -1 < 0) {
+                    cells[0][0] = false;
+                } else {
+                    if (isInitial) {
+                        cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
+                    } else {
+                        cells[0][0] = null;
+                    }
+                }
+                break;
+            case DOWN_LEFT_CORNER:
+                cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                cells[0][0] = false; //no original border
+                cells[numRowsOfExpandedTable - 1][0] = false;
+                if (startIndex.row - 1 < 0 || endIndex.col > numColsOfInitTable - 1) {
+                    cells[0][numColsOfExpandedTable - 1] = false;
+                } else {
+                    if (isInitial) {
+                        cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
+                    } else {
+                        cells[0][numColsOfExpandedTable - 1] = null;
+                    }
+                }
+                break;
+            case UP_LEFT_CORNER:
+                cells[0][numColsOfExpandedTable - 1] = false;
+                cells[0][0] = false;
+                cells[numRowsOfExpandedTable - 1][0] = false;
+                if (numRowsOfExpandedTable - 1 + startIndex.row - 1 > numRowsOfInitTable - 1 || endIndex.col > numColsOfInitTable - 1) {
+                    cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                } else {
+                    if (isInitial) {
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
+                                initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
+                    } else {
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
         return cells;
     }
 
@@ -367,7 +427,6 @@ public class SingleThreadGameOfLife implements Runnable {
 
     // switch tables
     private void switchTables() {
-        System.out.println(); //TODO: delete
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] is switching.\n" +
                 "Generation before switching: " + currGen + "\n" +
                 "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") before switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
@@ -377,15 +436,15 @@ public class SingleThreadGameOfLife implements Runnable {
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] finished switching.\n" +
                 "Generation AFTER switching: " + currGen + "\n" +
                 "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") AFTER switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
-        numNull=1;
+        numNull = 1;
     }
 
     //calc how many unknown
-    private int howManyNull(){
-        int nulls=0;
+    private int howManyNull() {
+        int nulls = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                if(currTable[i][j] == null)
+                if (currTable[i][j] == null)
                     nulls++;
             }
         }
@@ -396,7 +455,18 @@ public class SingleThreadGameOfLife implements Runnable {
         String str = "";
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
-                str = str + (matrix[i][j]==null ? "-" : matrix[i][j]==true? "1" : "0") + " ";
+                str = str + (matrix[i][j] == null ? "-" : matrix[i][j] == true ? "1" : "0") + " ";
+            }
+            str += "\n";
+        }
+        return str;
+    }
+
+    String printboolMatrix(boolean[][] matrix) {
+        String str = "";
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                str = str + (matrix[i][j] == true ? "1" : "0") + " ";
             }
             str += "\n";
         }

@@ -14,6 +14,8 @@ public class ParallelGameOfLife implements GameOfLife {
         int numOfRows = initialField.length, numOfCols = initialField[0].length;
         int rowJump = numOfRows / vSplit, colJump = numOfCols / hSplit;
 
+        Results.initTables(numOfRows,numOfCols);
+
         Thread[][] threads = new Thread[vSplit][hSplit];
 
         // give data to ThreadsCommunicator , hSplit + vSplit
