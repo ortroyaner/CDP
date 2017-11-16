@@ -177,17 +177,17 @@ public class SingleThreadGameOfLife implements Runnable {
         }
         if (endIndex.row != originRows) {
             //send the last row in curr table
-            ArrayList<Boolean> col = new ArrayList<>();
-            for (int row = 0; row < rows; row++) {
-                col.add(currTable[row][cols - 1]);
-            }
-            Message message = new Message(col, Message.Direction.DOWN, currGen);
+            ArrayList<Boolean> lastRow = new ArrayList<>(Arrays.asList(currTable[rows-1]));
+            Message message = new Message(lastRow, Message.Direction.DOWN, currGen);
             communicator.insertToBank(threadRow, threadCol, message);
         }
         if (endIndex.col != originCols) {
             //send the last col in curr table
-            ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[rows - 1]));
-            Message message = new Message(row, Message.Direction.RIGHT, currGen);
+            ArrayList<Boolean> col = new ArrayList<>();
+            for (int row = 0; row < rows; row++) {
+                col.add(currTable[row][cols - 1]);
+            }
+            Message message = new Message(col, Message.Direction.RIGHT, currGen);
             communicator.insertToBank(threadRow, threadCol, message);
         }
     }
