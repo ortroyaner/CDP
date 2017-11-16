@@ -111,26 +111,26 @@ public class SingleThreadGameOfLife implements Runnable {
             switch (message.getDirection()) {
                 case UP:
                     // fill up the first row in the bigger table
-                    for (int i = 0; i < cols + 2; i++) {
-                        prevTable[0][i] = message.getCells().get(i);
-                    }
-                    break;
-                case RIGHT:
-                    // fill up the right col in the bigger table
-                    for (int i = 0; i < rows + 2; i++) {
-                        prevTable[rows + 1][i] = message.getCells().get(i);
+                    for (int i = 0; i < cols; i++) {
+                        prevTable[0][i+1] = message.getCells().get(i);
                     }
                     break;
                 case DOWN:
                     // fill up the right col in the bigger table
-                    for (int i = 0; i < cols + 2; i++) {
-                        prevTable[cols + 1][i] = message.getCells().get(i);
+                    for (int i = 0; i < cols; i++) {
+                        prevTable[rows + 1][i+1] = message.getCells().get(i);
+                    }
+                    break;
+                case RIGHT:
+                    // fill up the right col in the bigger table
+                    for (int i = 0; i < rows; i++) {
+                        prevTable[i+1][cols + 1] = message.getCells().get(i);
                     }
                     break;
                 case LEFT:
-                    // fill up the right col in the bigger table
-                    for (int i = 0; i < rows + 2; i++) {
-                        prevTable[i][0] = message.getCells().get(i);
+                    // fill up the left col in the bigger table
+                    for (int i = 0; i < rows; i++) {
+                        prevTable[i+1][0] = message.getCells().get(i);
                     }
                     break;
                 case UPLEFT:
@@ -139,15 +139,15 @@ public class SingleThreadGameOfLife implements Runnable {
                     break;
                 case UPRIGHT:
                     // fill up the up-right cell in the bigger table
-                    prevTable[0][cols - 1] = message.getCells().get(0);
+                    prevTable[0][cols + 1] = message.getCells().get(0);
                     break;
                 case DOWNRIGHT:
                     // fill up the down-right cell in the bigger table
-                    prevTable[rows - 1][cols - 1] = message.getCells().get(0);
+                    prevTable[rows + 1][cols + 1] = message.getCells().get(0);
                     break;
                 case DOWNLEFT:
                     // fill up the down-left cell in the bigger table
-                    prevTable[rows - 1][0] = message.getCells().get(0);
+                    prevTable[rows + 1][0] = message.getCells().get(0);
                     break;
             }
         }
