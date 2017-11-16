@@ -27,7 +27,7 @@ public class MessagesBank {
             correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         }
         //At this point, we have a message with information that fits to the wanted generation
-        System.out.println("Thread wake up"); //TODO: delete
+        System.out.println("A thread just requested a message."); //TODO: delete
         return correctGenerationMessage;
     }
 

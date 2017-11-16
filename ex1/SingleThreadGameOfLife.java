@@ -367,9 +367,16 @@ public class SingleThreadGameOfLife implements Runnable {
 
     // switch tables
     private void switchTables() {
+        System.out.println(); //TODO: delete
+        System.out.println("Thread [" + threadRow + "][" + threadCol + "] is switching.\n" +
+                "Generation before switching: " + currGen + "\n" +
+                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") before switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
         prevTable = createMiniTable(currTable, new Index(0, 0), new Index(rows, cols), false);
         this.currTable = createBlankTable();
         this.currGen++;
+        System.out.println("Thread [" + threadRow + "][" + threadCol + "] finished switching.\n" +
+                "Generation AFTER switching: " + currGen + "\n" +
+                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") AFTER switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
         numNull=1;
     }
 
@@ -383,5 +390,16 @@ public class SingleThreadGameOfLife implements Runnable {
             }
         }
         return nulls;
+    }
+
+    String printBoolMatrix(Boolean[][] matrix) {
+        String str = "";
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                str = str + (matrix[i][j]==null ? "-" : matrix[i][j]==true? "1" : "0") + " ";
+            }
+            str += "\n";
+        }
+        return str;
     }
 }

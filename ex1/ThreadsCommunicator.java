@@ -26,7 +26,7 @@ class ThreadsCommunicator {
 
     Message getMessageFromBank(int row, int col, int generation) {
         Message returnMsg = messagesBank[row][col].getAndRemoveMessage(generation);
-        System.out.println("Thread [" + row + "][" + col + "] got this message: " + returnMsg.toString()); //TODO: delete
+        System.out.println("Thread [" + row + "][" + col + "] got a message: \n" + returnMsg.toString()); //TODO: delete
         return returnMsg;
     }
 
