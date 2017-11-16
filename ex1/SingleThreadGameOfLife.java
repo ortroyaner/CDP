@@ -253,7 +253,7 @@ public class SingleThreadGameOfLife implements Runnable {
             return;
         }
         //live with exactly 2 live neighbors + live before
-        if (prevTable[row + 1][col + 1] && liveNeighbors == 2 && unknownNeighbors == 0) {
+        if (liveNeighbors == 2 && unknownNeighbors == 0 && prevTable[row + 1][col + 1]) {
             currTable[row][col] = true;
             return;
         }
@@ -326,9 +326,9 @@ public class SingleThreadGameOfLife implements Runnable {
             } else {
                 // this is the left border of the original table. copy neighbors
                 if (isInitial) {
-                    cells[i][0] = initialTable[i + startIndex.row - 1][0];
+                    cells[i][0] = initialTable[i + startIndex.row - 1][this.startIndex.col-1];
                 } else {
-                    cells[i + startIndex.row - 1][0] = null;
+                    cells[i][0] = null;
                 }
             }
 
@@ -339,7 +339,7 @@ public class SingleThreadGameOfLife implements Runnable {
             } else {
                 // this is the right border of the original table. copy neighbors
                 if (isInitial) {
-                    cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][originCols - 1];
+                    cells[i][numColsOfExpandedTable - 1] = initialTable[i + startIndex.row - 1][this.endIndex.col];
                 } else {
                     cells[i][numColsOfExpandedTable - 1] = null;
                 }
