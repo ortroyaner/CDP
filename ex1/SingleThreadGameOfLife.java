@@ -216,10 +216,10 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 neiRow = row + 1 + i;
                 neiCol = col + 1 + j;
-                if (prevTable[neiRow][neiCol] == false) {
+                if (prevTable[neiRow][neiCol]!=null && prevTable[neiRow][neiCol] == false) {
                     deadNeighbors++;
                 }
-                if (prevTable[neiRow][neiCol] == true) {
+                if (prevTable[neiRow][neiCol]!=null && prevTable[neiRow][neiCol] == true) {
                     liveNeighbors++;
                 }
             }
