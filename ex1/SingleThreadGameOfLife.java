@@ -65,6 +65,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 // ask for information from other threads.
                 System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
                 if (this.currGen != this.generations - 1) {
+                    System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
                     switchTables();
                 } else this.currGen++;
             } else {
@@ -283,7 +284,12 @@ public class SingleThreadGameOfLife implements Runnable {
         // fill the inner part
         for (int i = 1; i < numRowsOfExpandedTable - 1; i++) {
             for (int j = 1; j < numColsOfExpandedTable - 1; j++) {
-                cells[i][j] = initialTable[i + startIndex.row - 1][j + startIndex.col - 1];
+                if (isInitial) {
+                    cells[i][j] = initialTable[i + startIndex.row - 1][j + startIndex.col - 1];
+                }
+                else {
+                    cells[i][j] = currTable[i-1][j-1];
+                }
             }
         }
 
@@ -430,7 +436,7 @@ public class SingleThreadGameOfLife implements Runnable {
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] is switching.\n" +
                 "Generation before switching: " + currGen + "\n" +
                 "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") before switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
-        prevTable = createMiniTable(currTable, new Index(0, 0), new Index(rows, cols), false);
+        prevTable = createMiniTable(currTable, startIndex, endIndex, false);
         this.currTable = createBlankTable();
         this.currGen++;
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] finished switching.\n" +
