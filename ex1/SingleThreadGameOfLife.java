@@ -90,15 +90,15 @@ public class SingleThreadGameOfLife implements Runnable {
         }
 
         // update original tables
-        System.out.println("PrevBefore: \n" + printBoolMatrix(currTable)); //TODO: delete
-        System.out.println("FinalBefore: \n" + printBoolMatrix(returnToRealSize(prevTable))); //TODO: delete
+        System.out.println("LastBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(currTable)); //TODO: delete
+        System.out.println("PrevBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(returnToRealSize(prevTable))); //TODO: delete
 
         System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()"); //TODO: delete
         Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
         Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
 
-        System.out.println("Prev: \n" + printboolMatrix(Results.getPrev())); //TODO: delete
-        System.out.println("Final: \n" + printboolMatrix(Results.getLast())); //TODO: delete
+        System.out.println("Prev Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getPrev())); //TODO: delete
+        System.out.println("Final Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getLast())); //TODO: delete
 
     }
 
@@ -296,7 +296,7 @@ public class SingleThreadGameOfLife implements Runnable {
             } else {
                 // this is not the upper border of the original table. copy neighbors
                 if (isInitial) {
-                    cells[0][j] = initialTable[startIndex.row - 1][j - 1];
+                    cells[0][j] = initialTable[startIndex.row - 1][startIndex.col + j - 1];
                 } else {
                     cells[0][j] = null;
                 }
@@ -310,7 +310,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 // this is the lower border of the original table. copy neighbors
                 if (isInitial) {
 //                    System.out.println("endIndex.row: "+endIndex.row+" j: "+j);
-                    cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][j - 1];
+                    cells[numRowsOfExpandedTable - 1][j] = initialTable[endIndex.row][startIndex.col + j - 1];
                 } else {
                     cells[numRowsOfExpandedTable - 1][j] = null;
                 }
@@ -326,7 +326,7 @@ public class SingleThreadGameOfLife implements Runnable {
             } else {
                 // this is the left border of the original table. copy neighbors
                 if (isInitial) {
-                    cells[i][0] = initialTable[i + startIndex.row - 1][this.startIndex.col-1];
+                    cells[i][0] = initialTable[i + startIndex.row - 1][this.startIndex.col - 1];
                 } else {
                     cells[i][0] = null;
                 }
@@ -354,7 +354,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 cells[0][0] = false;
                 cells[0][numColsOfExpandedTable - 1] = false;
                 cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
-                if (startIndex.col - 1 < 0 || numRowsOfExpandedTable - 1 + startIndex.row - 1 > numRowsOfInitTable - 1) {
+                if (startIndex.col - 1 < 0 || endIndex.row == originRows) {
                     cells[numRowsOfExpandedTable - 1][0] = false;
                 } else {
                     if (isInitial) {
@@ -369,7 +369,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 cells[0][numColsOfExpandedTable - 1] = false; //no original border
                 cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                 cells[numRowsOfExpandedTable - 1][0] = false;
-                if (startIndex.row - 1 < 0 || startIndex.col -1 < 0) {
+                if (startIndex.row - 1 < 0 || startIndex.col - 1 < 0) {
                     cells[0][0] = false;
                 } else {
                     if (isInitial) {
@@ -383,7 +383,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                 cells[0][0] = false; //no original border
                 cells[numRowsOfExpandedTable - 1][0] = false;
-                if (startIndex.row - 1 < 0 || endIndex.col > numColsOfInitTable - 1) {
+                if (startIndex.row - 1 < 0 || endIndex.col == originCols) {
                     cells[0][numColsOfExpandedTable - 1] = false;
                 } else {
                     if (isInitial) {
@@ -397,7 +397,7 @@ public class SingleThreadGameOfLife implements Runnable {
                 cells[0][numColsOfExpandedTable - 1] = false;
                 cells[0][0] = false;
                 cells[numRowsOfExpandedTable - 1][0] = false;
-                if (numRowsOfExpandedTable - 1 + startIndex.row - 1 > numRowsOfInitTable - 1 || endIndex.col > numColsOfInitTable - 1) {
+                if (endIndex.row == originRows || endIndex.col == originCols) {
                     cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                 } else {
                     if (isInitial) {
