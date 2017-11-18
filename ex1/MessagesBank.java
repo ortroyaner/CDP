@@ -45,7 +45,6 @@ public class MessagesBank {
     }
 
     synchronized void insertMessage(Message message) {
-        System.out.println("Thread inserts a message: " + message.toString()); //TODO: delete
         messages.add(message);
         notifyAll(); //will awake the sleeping thread because a message is now inserted
     }

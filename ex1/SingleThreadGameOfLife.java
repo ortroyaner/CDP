@@ -94,9 +94,15 @@ public class SingleThreadGameOfLife implements Runnable {
         System.out.println("LastBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(currTable)); //TODO: delete
         System.out.println("PrevBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(returnToRealSize(prevTable))); //TODO: delete
 
-        System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()"); //TODO: delete
-        Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
-        Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
+        if (generations == 0) {
+            Results.updateTable(Results.TableKind.LAST, returnToRealSize(prevTable), startIndex, endIndex);
+            Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
+        }
+        else {
+            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()"); //TODO: delete
+            Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
+            Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
+        }
 
         System.out.println("Prev Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getPrev())); //TODO: delete
         System.out.println("Final Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getLast())); //TODO: delete
@@ -506,6 +512,78 @@ public class SingleThreadGameOfLife implements Runnable {
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
                                 initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
                     } else {
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
+                    }
+                }
+                break;
+            case UP_EDGE:
+                if (endIndex.row == originRows) {
+                    cells[numRowsOfExpandedTable - 1][0] = false;
+                    cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                }
+                else {
+                    if (isInitial) {
+                        cells[numRowsOfExpandedTable - 1][0]
+                                = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
+                                initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
+                        cells[0][0] = false;
+                        cells[0][numColsOfExpandedTable - 1] = false;
+                    } else {
+                        cells[numRowsOfExpandedTable - 1][0] = null;
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
+                    }
+                }
+                break;
+            case RIGHT_EDGE:
+                if (startIndex.col - 1 < 0) {
+                    cells[numRowsOfExpandedTable - 1][0] = false;
+                    cells[0][0] = false;
+                }
+                else {
+                    if (isInitial) {
+                        cells[numRowsOfExpandedTable - 1][0]
+                                = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
+                        cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
+                        cells[0][numColsOfExpandedTable - 1] = false;
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                    } else {
+                        cells[numRowsOfExpandedTable - 1][0] = null;
+                        cells[0][0] = null;
+                    }
+                }
+                break;
+            case DOWN_EDGE:
+                if (startIndex.row - 1 < 0) {
+                    cells[0][0] = false;
+                    cells[0][numColsOfExpandedTable - 1] = false;
+                }
+                else {
+                    if (isInitial) {
+                        cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
+                        cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
+                        cells[numRowsOfExpandedTable - 1][0] = false;
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                    } else {
+                        cells[0][0] = null;
+                        cells[0][numColsOfExpandedTable - 1] = null;
+                    }
+                }
+                break;
+            case LEFT_EDGE:
+                if (endIndex.col == originCols) {
+                    cells[0][numColsOfExpandedTable - 1] = false;
+                    cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
+                }
+                else {
+                    if (isInitial) {
+                        cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
+                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
+                                initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
+                        cells[0][0] = false;
+                        cells[numRowsOfExpandedTable - 1][0] = false;
+                    } else {
+                        cells[0][numColsOfExpandedTable - 1] = null;
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
                     }
                 }

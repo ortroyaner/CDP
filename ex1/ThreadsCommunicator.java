@@ -31,6 +31,9 @@ class ThreadsCommunicator {
     }
 
     void insertToBank(int fromThreadRow, int fromThreadCol, Message messageToInsert) {
+        System.out.println("Thread [" + fromThreadRow + "][" + fromThreadCol + "]" +
+                " inserts a message: " + messageToInsert.toString()); //TODO: delete
+
         Message.Direction direction = messageToInsert.getDirection();
         switch (direction) {
             case UP:
