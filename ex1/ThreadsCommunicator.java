@@ -26,13 +26,13 @@ class ThreadsCommunicator {
 
     Message getMessageFromBank(int row, int col, int generation) {
         Message returnMsg = messagesBank[row][col].getAndRemoveMessage(generation);
-        System.out.println("Thread [" + row + "][" + col + "] got a message: \n" + returnMsg.toString()); //TODO: delete
+//        System.out.println("Thread [" + row + "][" + col + "] got a message: \n" + returnMsg.toString()); //TODO: delete
         return returnMsg;
     }
 
     void insertToBank(int fromThreadRow, int fromThreadCol, Message messageToInsert) {
-        System.out.println("Thread [" + fromThreadRow + "][" + fromThreadCol + "]" +
-                " inserts a message: " + messageToInsert.toString()); //TODO: delete
+//        System.out.println("Thread [" + fromThreadRow + "][" + fromThreadCol + "]" +
+//                " inserts a message: " + messageToInsert.toString()); //TODO: delete
 
         Message.Direction direction = messageToInsert.getDirection();
         switch (direction) {

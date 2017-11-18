@@ -64,7 +64,7 @@ public class ParallelGameOfLife implements GameOfLife {
                 try {
                     threads[i][j].join();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
         }
