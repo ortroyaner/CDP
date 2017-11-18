@@ -517,6 +517,8 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 break;
             case UP_EDGE:
+                cells[0][0] = false;
+                cells[0][numColsOfExpandedTable - 1] = false;
                 if (endIndex.row == originRows) {
                     cells[numRowsOfExpandedTable - 1][0] = false;
                     cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
@@ -527,8 +529,6 @@ public class SingleThreadGameOfLife implements Runnable {
                                 = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
                                 initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
-                        cells[0][0] = false;
-                        cells[0][numColsOfExpandedTable - 1] = false;
                     } else {
                         cells[numRowsOfExpandedTable - 1][0] = null;
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
@@ -536,6 +536,8 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 break;
             case RIGHT_EDGE:
+                cells[0][numColsOfExpandedTable - 1] = false;
+                cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                 if (startIndex.col - 1 < 0) {
                     cells[numRowsOfExpandedTable - 1][0] = false;
                     cells[0][0] = false;
@@ -545,8 +547,6 @@ public class SingleThreadGameOfLife implements Runnable {
                         cells[numRowsOfExpandedTable - 1][0]
                                 = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
                         cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
-                        cells[0][numColsOfExpandedTable - 1] = false;
-                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                     } else {
                         cells[numRowsOfExpandedTable - 1][0] = null;
                         cells[0][0] = null;
@@ -554,6 +554,8 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 break;
             case DOWN_EDGE:
+                cells[numRowsOfExpandedTable - 1][0] = false;
+                cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                 if (startIndex.row - 1 < 0) {
                     cells[0][0] = false;
                     cells[0][numColsOfExpandedTable - 1] = false;
@@ -562,8 +564,6 @@ public class SingleThreadGameOfLife implements Runnable {
                     if (isInitial) {
                         cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
                         cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
-                        cells[numRowsOfExpandedTable - 1][0] = false;
-                        cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
                     } else {
                         cells[0][0] = null;
                         cells[0][numColsOfExpandedTable - 1] = null;
@@ -571,6 +571,8 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 break;
             case LEFT_EDGE:
+                cells[0][0] = false;
+                cells[numRowsOfExpandedTable - 1][0] = false;
                 if (endIndex.col == originCols) {
                     cells[0][numColsOfExpandedTable - 1] = false;
                     cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = false;
@@ -580,12 +582,26 @@ public class SingleThreadGameOfLife implements Runnable {
                         cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
                                 initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
-                        cells[0][0] = false;
-                        cells[numRowsOfExpandedTable - 1][0] = false;
                     } else {
                         cells[0][numColsOfExpandedTable - 1] = null;
                         cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
                     }
+                }
+                break;
+            case INNER:
+                if (isInitial) {
+                    cells[0][0] = initialTable[startIndex.row - 1][startIndex.col - 1];
+                    cells[0][numColsOfExpandedTable - 1] = initialTable[startIndex.row - 1][endIndex.col];
+                    cells[numRowsOfExpandedTable - 1][0]
+                            = initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][startIndex.col - 1];
+                    cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] =
+                            initialTable[numRowsOfExpandedTable - 1 + startIndex.row - 1][endIndex.col];
+
+                } else {
+                    cells[0][0] = null;
+                    cells[0][numColsOfExpandedTable - 1] = null;
+                    cells[numRowsOfExpandedTable - 1][0] = null;
+                    cells[numRowsOfExpandedTable - 1][numColsOfExpandedTable - 1] = null;
                 }
                 break;
             default:
