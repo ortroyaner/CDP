@@ -69,13 +69,13 @@ public class SingleThreadGameOfLife implements Runnable {
                     switchTables();
                 } else this.currGen++;
             } else {
-                // calc the cells we can do independently
-                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
-                updateCells();
-
                 // check for cells from neighbors
                 System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateTableFromNeighbors()"); //TODO: delete
                 updateTableFromNeighbors();
+
+                // calc the cells we can do independently
+                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
+                updateCells();
 
                 // update neighbors on cells in edges
                 System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()"); //TODO: delete
@@ -121,7 +121,7 @@ public class SingleThreadGameOfLife implements Runnable {
         // keep getting data, until you got all the data needed
         while (currNeighborsStatus < numOfNeighbors) {
             currNeighborsStatus++;
-            Message message = communicator.getMessageFromBank(threadRow, threadCol, currGen - 1);
+            Message message = communicator.getMessageFromBank(threadRow, threadCol, currGen);
             // update prev table with this data
             switch (message.getDirection()) {
                 case UP:
@@ -176,10 +176,106 @@ public class SingleThreadGameOfLife implements Runnable {
     // send edges to communicator
     private void updateNeighbors() {
         System.out.println("updateNeighbors"); // TODO: delete
+        // send corners
+        BlockMatrixDirection dir = communicator.getThreadBlockMatrixLocation(threadRow, threadCol);
+        switch (dir) {
+            case UP_RIGHT_CORNER:
+                if (!(startIndex.col - 1 < 0 || endIndex.row == originRows)) {
+                    ArrayList<Boolean> upRight = new ArrayList<>(Arrays.asList(currTable[rows - 1][0]));
+                    Message messageUpRight = new Message(upRight, Message.Direction.DOWNLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpRight);
+                }
+                break;
+            case DOWN_RIGHT_CORNER:
+                if (!(startIndex.row - 1 < 0 || startIndex.col - 1 < 0)) {
+                    ArrayList<Boolean> downRight = new ArrayList<>(Arrays.asList(currTable[0][0]));
+                    Message messageDownRight = new Message(downRight, Message.Direction.UPLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownRight);
+                }
+                break;
+            case DOWN_LEFT_CORNER:
+                if (!(startIndex.row - 1 < 0 || endIndex.col == originCols)) {
+                    ArrayList<Boolean> downLeft = new ArrayList<>(Arrays.asList(currTable[0][cols - 1]));
+                    Message messageDownLeft = new Message(downLeft, Message.Direction.UPRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownLeft);
+                }
+                break;
+            case UP_LEFT_CORNER:
+                if (!(endIndex.row == originRows || endIndex.col == originCols)) {
+                    ArrayList<Boolean> upLeft = new ArrayList<>(Arrays.asList(currTable[rows - 1][cols - 1]));
+                    Message messageUpLeft = new Message(upLeft, Message.Direction.DOWNRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpLeft);
+                }
+                break;
+            case UP_EDGE:
+                if (!(endIndex.row == originRows)) {
+                    ArrayList<Boolean> upRight = new ArrayList<>(Arrays.asList(currTable[rows - 1][0]));
+                    Message messageUpRight = new Message(upRight, Message.Direction.DOWNLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpRight);
+
+                    ArrayList<Boolean> upLeft = new ArrayList<>(Arrays.asList(currTable[rows - 1][cols - 1]));
+                    Message messageUpLeft = new Message(upLeft, Message.Direction.DOWNRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpLeft);
+                }
+                break;
+            case RIGHT_EDGE:
+                if (!(startIndex.col - 1 < 0)) {
+                    ArrayList<Boolean> upRight = new ArrayList<>(Arrays.asList(currTable[rows - 1][0]));
+                    Message messageUpRight = new Message(upRight, Message.Direction.DOWNLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpRight);
+
+                    ArrayList<Boolean> downRight = new ArrayList<>(Arrays.asList(currTable[0][0]));
+                    Message messageDownRight = new Message(downRight, Message.Direction.UPLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownRight);
+                }
+                break;
+            case DOWN_EDGE:
+                if (!(startIndex.row - 1 < 0)) {
+                    ArrayList<Boolean> downRight = new ArrayList<>(Arrays.asList(currTable[0][0]));
+                    Message messageDownRight = new Message(downRight, Message.Direction.UPLEFT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownRight);
+
+                    ArrayList<Boolean> downLeft = new ArrayList<>(Arrays.asList(currTable[0][cols - 1]));
+                    Message messageDownLeft = new Message(downLeft, Message.Direction.UPRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownLeft);
+                }
+                break;
+            case LEFT_EDGE:
+                if (!(endIndex.col == originCols)) {
+                    ArrayList<Boolean> downLeft = new ArrayList<>(Arrays.asList(currTable[0][cols - 1]));
+                    Message messageDownLeft = new Message(downLeft, Message.Direction.UPRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageDownLeft);
+
+                    ArrayList<Boolean> upLeft = new ArrayList<>(Arrays.asList(currTable[rows - 1][cols - 1]));
+                    Message messageUpLeft = new Message(upLeft, Message.Direction.DOWNRIGHT, currGen + 1);
+                    communicator.insertToBank(threadRow, threadCol, messageUpLeft);
+                }
+                break;
+            case INNER:
+                ArrayList<Boolean> upRight = new ArrayList<>(Arrays.asList(currTable[rows - 1][0]));
+                Message messageUpRight = new Message(upRight, Message.Direction.DOWNLEFT, currGen + 1);
+                communicator.insertToBank(threadRow, threadCol, messageUpRight);
+
+                ArrayList<Boolean> downRight = new ArrayList<>(Arrays.asList(currTable[0][0]));
+                Message messageDownRight = new Message(downRight, Message.Direction.UPLEFT, currGen + 1);
+                communicator.insertToBank(threadRow, threadCol, messageDownRight);
+
+                ArrayList<Boolean> downLeft = new ArrayList<>(Arrays.asList(currTable[0][cols - 1]));
+                Message messageDownLeft = new Message(downLeft, Message.Direction.UPRIGHT, currGen + 1);
+                communicator.insertToBank(threadRow, threadCol, messageDownLeft);
+
+                ArrayList<Boolean> upLeft = new ArrayList<>(Arrays.asList(currTable[rows - 1][cols - 1]));
+                Message messageUpLeft = new Message(upLeft, Message.Direction.DOWNRIGHT, currGen + 1);
+                communicator.insertToBank(threadRow, threadCol, messageUpLeft);
+
+                break;
+            default:
+                break;
+        }
         if (startIndex.row != 0) {
             //send the first row in curr table
             ArrayList<Boolean> row = new ArrayList<>(Arrays.asList(currTable[0]));
-            Message message = new Message(row, Message.Direction.UP, currGen);
+            Message message = new Message(row, Message.Direction.UP, currGen+1);
             communicator.insertToBank(threadRow, threadCol, message);
         }
         if (startIndex.col != 0) {
@@ -188,13 +284,13 @@ public class SingleThreadGameOfLife implements Runnable {
             for (int row = 0; row < rows; row++) {
                 col.add(currTable[row][0]);
             }
-            Message message = new Message(col, Message.Direction.LEFT, currGen);
+            Message message = new Message(col, Message.Direction.LEFT, currGen+1);
             communicator.insertToBank(threadRow, threadCol, message);
         }
         if (endIndex.row != originRows) {
             //send the last row in curr table
             ArrayList<Boolean> lastRow = new ArrayList<>(Arrays.asList(currTable[rows - 1]));
-            Message message = new Message(lastRow, Message.Direction.DOWN, currGen);
+            Message message = new Message(lastRow, Message.Direction.DOWN, currGen+1);
             communicator.insertToBank(threadRow, threadCol, message);
         }
         if (endIndex.col != originCols) {
@@ -203,7 +299,7 @@ public class SingleThreadGameOfLife implements Runnable {
             for (int row = 0; row < rows; row++) {
                 col.add(currTable[row][cols - 1]);
             }
-            Message message = new Message(col, Message.Direction.RIGHT, currGen);
+            Message message = new Message(col, Message.Direction.RIGHT, currGen+1);
             communicator.insertToBank(threadRow, threadCol, message);
         }
     }
