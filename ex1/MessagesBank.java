@@ -6,8 +6,8 @@ import java.util.Iterator;
 /**
  * Created by Or Troyaner on 11/11/2017.
  */
-public class MessagesBank {
-    private ArrayList<Message> messages;
+class MessagesBank {
+    private final ArrayList<Message> messages;
 
     MessagesBank() {
         messages = new ArrayList<>();
@@ -19,7 +19,7 @@ public class MessagesBank {
         Message correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         while (correctGenerationMessage == null) {
             try {
-//                System.out.println("Thread wait()"); //TODO: delete
+//                System.out.println("Thread wait()");
                   wait();
             } catch (InterruptedException e) {
 //                e.printStackTrace();
@@ -27,7 +27,7 @@ public class MessagesBank {
             correctGenerationMessage = findAndRemoveMsgFromGeneration(generation);
         }
         //At this point, we have a message with information that fits to the wanted generation
-//        System.out.println("A thread just requested a message about gen " + generation + "."); //TODO: delete
+//        System.out.println("A thread just requested a message about gen " + generation + ".");
         return correctGenerationMessage;
     }
 

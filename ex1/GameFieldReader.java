@@ -2,11 +2,11 @@ package ex1;
 import java.io.*;
 import java.util.*;
 
-public class GameFieldReader{
+class GameFieldReader{
 	
-	String filename;
-	int sizeX;
-	int sizeY;
+	final String filename;
+	final int sizeX;
+	final int sizeY;
 	
 	public GameFieldReader(String filename, int sizeX,int sizeY){
 		this.filename=filename;
@@ -16,7 +16,7 @@ public class GameFieldReader{
 	
 	public boolean[][] parseData() throws Exception{
 	  BufferedReader br=null;
-	  ArrayList<PatternBlock> patternBlocks=new ArrayList<PatternBlock>();
+	  ArrayList<PatternBlock> patternBlocks= new ArrayList<>();
 	  try{
 		br=new BufferedReader(new FileReader(filename));	
 		String line;
@@ -43,7 +43,7 @@ public class GameFieldReader{
 					patternBlocks.add(new PatternBlock(coords,pattern));
 				}
 				coords=line;
-				pattern=new ArrayList<String>();
+				pattern= new ArrayList<>();
 				continue;
 			}
 			
@@ -113,12 +113,12 @@ public class GameFieldReader{
 }
 class PatternBlock{
 	// left upper conner coords
-	int x;
-	int y;
-	int maxX=0;
-	int maxY=0;
+	private int x;
+	private int y;
+	private int maxX=0;
+	private int maxY=0;
 
-	ArrayList<boolean[]> pattern=new ArrayList<boolean[]>();
+	private final ArrayList<boolean[]> pattern= new ArrayList<>();
 	
 	public PatternBlock(String coords, ArrayList<String> rawPattern) throws Exception{
 		parsePattern(coords,rawPattern);

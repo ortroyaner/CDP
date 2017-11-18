@@ -10,9 +10,9 @@ import static ex1.Message.Direction.UP;
  */
 /* This class describe a message that threads can produce and consume */
 class Message {
-    private ArrayList<Boolean> cells;
+    private final ArrayList<Boolean> cells;
     private Direction direction;
-    private Integer generation;
+    private final Integer generation;
 
     enum Direction {
         UP, RIGHT, DOWN, LEFT, UPLEFT, UPRIGHT, DOWNLEFT, DOWNRIGHT
@@ -43,13 +43,13 @@ class Message {
     public String toString() {
         String msg = "Direction: '" + this.direction + "', Generation: '" + this.generation + "', Cells: \n";
         if (direction==UP || direction == DOWN) {
-            for (int i = 0; i < cells.size(); i++) {
-                msg = msg + (cells.get(i)==null ? "null" : (cells.get(i)==true? "1" : "0")) + " ";
+            for (Boolean cell : cells) {
+                msg = msg + (cell == null ? "null" : (cell ? "1" : "0")) + " ";
             }
         }
         else {
-            for (int i = 0; i < cells.size(); i++) {
-                msg = msg + (cells.get(i)==null ? "null" : (cells.get(i)==true? "1" : "0"));
+            for (Boolean cell : cells) {
+                msg = msg + (cell == null ? "null" : (cell ? "1" : "0"));
                 msg += "\n";
             }
         }

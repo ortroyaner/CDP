@@ -8,9 +8,9 @@ import static ex1.Message.Direction.*;
 /* This class controls the messages passing and communication between parallel threads */
 class ThreadsCommunicator {
     /* holds a bank of messages for thread's produce-consume */
-    private MessagesBank[][] messagesBank;
-    private int vSplit;
-    private int hSplit;
+    private final MessagesBank[][] messagesBank;
+    private final int vSplit;
+    private final int hSplit;
 
     ThreadsCommunicator(int vSplit, int hSplit) {
         this.vSplit = vSplit;
@@ -25,14 +25,13 @@ class ThreadsCommunicator {
     }
 
     Message getMessageFromBank(int row, int col, int generation) {
-        Message returnMsg = messagesBank[row][col].getAndRemoveMessage(generation);
-//        System.out.println("Thread [" + row + "][" + col + "] got a message: \n" + returnMsg.toString()); //TODO: delete
-        return returnMsg;
+        //        System.out.println("Thread [" + row + "][" + col + "] got a message: \n" + returnMsg.toString());
+        return messagesBank[row][col].getAndRemoveMessage(generation);
     }
 
     void insertToBank(int fromThreadRow, int fromThreadCol, Message messageToInsert) {
 //        System.out.println("Thread [" + fromThreadRow + "][" + fromThreadCol + "]" +
-//                " inserts a message: " + messageToInsert.toString()); //TODO: delete
+//                " inserts a message: " + messageToInsert.toString());
 
         Message.Direction direction = messageToInsert.getDirection();
         switch (direction) {

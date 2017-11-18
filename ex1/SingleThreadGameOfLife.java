@@ -10,14 +10,20 @@ public class SingleThreadGameOfLife implements Runnable {
         UP_EDGE
     }
 
-    Boolean[][] currTable, prevTable;
-    int currGen, generations;
-    Index startIndex, endIndex;
-    int rows, cols;
-    int threadRow, threadCol;
-    int originRows, originCols;
-    ThreadsCommunicator communicator;
-    int numNull = 1;
+    private Boolean[][] currTable;
+    private Boolean[][] prevTable;
+    private int currGen;
+    private final int generations;
+    private final Index startIndex;
+    private final Index endIndex;
+    private final int rows;
+    private final int cols;
+    private final int threadRow;
+    private final int threadCol;
+    private final int originRows;
+    private final int originCols;
+    private final ThreadsCommunicator communicator;
+    private int numNull = 1;
 
 
     public SingleThreadGameOfLife(boolean[][] initialTable, Index startIndex, Index endIndex,
@@ -54,36 +60,36 @@ public class SingleThreadGameOfLife implements Runnable {
         while (this.currGen < this.generations) {
             if (this.currGen == 0) {
                 // calc the cells we can do independently
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()");
                 updateCells();
 
                 // update neighbors on cells in edges
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()");
                 updateNeighbors();
 
                 // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
                 // ask for information from other threads.
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()");
                 if (this.currGen != this.generations - 1) {
-//                    System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
+//                    System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()");
                     switchTables();
                 } else this.currGen++;
             } else {
                 // check for cells from neighbors
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateTableFromNeighbors()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateTableFromNeighbors()");
                 updateTableFromNeighbors();
 
                 // calc the cells we can do independently
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateCells()");
                 updateCells();
 
                 // update neighbors on cells in edges
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling updateNeighbors()");
                 updateNeighbors();
 
                 // if we're in generation 0, we're done. we know everything from gen=-1since this is the initialTable, so we don't need to
                 // ask for information from other threads.
-//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); //TODO: delete
+//                System.out.println("Thread [" + threadRow + "][" + threadCol + "] (gen: " + this.currGen + ") is calling switchTables()"); /
                 if (this.currGen != this.generations - 1) {
                     switchTables();
                 } else this.currGen++;
@@ -91,21 +97,21 @@ public class SingleThreadGameOfLife implements Runnable {
         }
 
         // update original tables
-//        System.out.println("LastBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(currTable)); //TODO: delete
-//        System.out.println("PrevBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(returnToRealSize(prevTable))); //TODO: delete
+//        System.out.println("LastBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(currTable));
+//        System.out.println("PrevBefore Thread [" + threadRow + "][" + threadCol + "]: \n" + printBoolMatrix(returnToRealSize(prevTable)));
 
         if (generations == 0) {
             Results.updateTable(Results.TableKind.LAST, returnToRealSize(prevTable), startIndex, endIndex);
             Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
         }
         else {
-//            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()"); //TODO: delete
+//            System.out.println("Thread [" + threadRow + "][" + threadCol + "] is calling updateTable()");
             Results.updateTable(Results.TableKind.LAST, currTable, startIndex, endIndex);
             Results.updateTable(Results.TableKind.PREV, returnToRealSize(prevTable), startIndex, endIndex);
         }
 
-//        System.out.println("Prev Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getPrev())); //TODO: delete
-//        System.out.println("Final Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getLast())); //TODO: delete
+//        System.out.println("Prev Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getPrev()));
+//        System.out.println("Final Thread [" + threadRow + "][" + threadCol + "]: \n" + printboolMatrix(Results.getLast()));
 
     }
 
@@ -174,14 +180,14 @@ public class SingleThreadGameOfLife implements Runnable {
         }
 
         // update current board
-//        System.out.println("updaing cells from inner"); // TODO: delete
+//        System.out.println("updaing cells from inner");
         updateCells();
 
     }
 
     // send edges to communicator
     private void updateNeighbors() {
-//        System.out.println("updateNeighbors"); // TODO: delete
+//        System.out.println("updateNeighbors");
         // send corners
         BlockMatrixDirection dir = communicator.getThreadBlockMatrixLocation(threadRow, threadCol);
         switch (dir) {
@@ -312,7 +318,7 @@ public class SingleThreadGameOfLife implements Runnable {
 
     // update the cells we already know
     private void updateCells() {
-//        System.out.println("updateCells"); // TODO: delete
+//        System.out.println("updateCells");
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 updateCell(i, j);
@@ -322,8 +328,8 @@ public class SingleThreadGameOfLife implements Runnable {
 
     // update a single cell
     private void updateCell(int row, int col) {
-//        System.out.println("Thread ["+threadRow+"]["+threadCol+"] is in updateCell"); // TODO: delete
-        int liveNeighbors = 0, deadNeighbors = 0, unknownNeighbors = 0;
+//        System.out.println("Thread ["+threadRow+"]["+threadCol+"] is in updateCell");
+        int liveNeighbors = 0, deadNeighbors = 0, unknownNeighbors;
         int neiCol, neiRow;
 
         for (int i = -1; i < 2; i++) {
@@ -334,10 +340,10 @@ public class SingleThreadGameOfLife implements Runnable {
                 }
                 neiRow = row + 1 + i;
                 neiCol = col + 1 + j;
-                if (prevTable[neiRow][neiCol] != null && prevTable[neiRow][neiCol] == false) {
+                if (prevTable[neiRow][neiCol] != null && !prevTable[neiRow][neiCol]) {
                     deadNeighbors++;
                 }
-                if (prevTable[neiRow][neiCol] != null && prevTable[neiRow][neiCol] == true) {
+                if (prevTable[neiRow][neiCol] != null && prevTable[neiRow][neiCol]) {
                     liveNeighbors++;
                 }
             }
@@ -625,13 +631,13 @@ public class SingleThreadGameOfLife implements Runnable {
     private void switchTables() {
 //        System.out.println("Thread [" + threadRow + "][" + threadCol + "] is switching.\n" +
 //                "Generation before switching: " + currGen + "\n" +
-//                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") before switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
+//                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") before switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****");
         prevTable = createMiniTable(currTable, startIndex, endIndex, false);
         this.currTable = createBlankTable();
         this.currGen++;
 //        System.out.println("Thread [" + threadRow + "][" + threadCol + "] finished switching.\n" +
 //                "Generation AFTER switching: " + currGen + "\n" +
-//                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") AFTER switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****"); //TODO: delete
+//                "**** prev table (" + prevTable.length + "," + prevTable[0].length + ") AFTER switch is: **** \n" + printBoolMatrix(prevTable) + "\n **** end for prev table ****");
         numNull = 1;
     }
 

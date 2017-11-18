@@ -1,7 +1,5 @@
 package ex1;
 
-import java.util.ArrayList;
-
 public class ParallelGameOfLife implements GameOfLife {
 
     public boolean[][][] invoke(boolean[][] initialField, int hSplit, int vSplit,
